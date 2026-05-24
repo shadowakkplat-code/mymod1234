@@ -10,12 +10,6 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 neoForge {
     version = '21.4.147'
-    
-    mods {
-        mymod {
-            sourceSet sourceSets.main
-        }
-    }
 }
 
 sourceSets.main.resources { srcDir 'src/main/resources' }
@@ -24,15 +18,31 @@ repositories {
     mavenCentral()
 }
 
-// Заставляем плагин сделать имя манифеста строго mods.toml для версии 1.21.4
-tasks.named('processResources', ProcessResources) {
-    inputs.property 'version', project.version
+// Принудительно генерируем правильный файл mods.toml прямо внутрь .jar
+jar {
+    into('META-INF') {
+        from(stringToTxtFile("""
+modLoader="javafml"
+loaderVersion="[21,)"
+license="MIT"
 
-    filesMatching('META-INF/neoforge.mods.toml') {
-        rename 'neoforge.mods.toml', 'mods.toml'
+[[mods]]
+modId="mymod"
+version="1.0.0"
+displayName="My PvP Mod"
+authors="shadowakkplat-code"
+description="Custom PvP Client features"
+"""))
+        rename { 'mods.toml' }
     }
 }
 
+def stringToTxtFile(String content) {
+    def tempFile = File.createTempFile("mods", "toml")
+    tempFile.text = content
+    return tempFile
+}
+
 tasks.withType(ProcessResources).configureEach {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
