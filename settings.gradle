@@ -1,10 +1,7 @@
 pluginManagement {
     repositories {
-        maven { url = 'https://minecraftforge.net' }
-        maven { url = 'https://spongepowered.org' }
+        maven { url = 'https://neoforged.net' }
         gradlePluginPortal()
-        mavenCentral()
     }
 }
-
 rootProject.name = 'mymod'
