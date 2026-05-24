@@ -1,1 +1,10 @@
+pluginManagement {
+    repositories {
+        maven { url = 'https://minecraftforge.net' }
+        maven { url = 'https://spongepowered.org' }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
 rootProject.name = 'mymod'
