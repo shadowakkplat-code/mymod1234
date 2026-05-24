@@ -3,6 +3,7 @@ package com.example.mymod;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -11,35 +12,34 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RenderBlockScreenEffectEvent;
 import net.neoforged.neoforge.client.event.RenderGuiOverlayEvent;
 import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 
 @Mod("mymod")
 public class MyMod {
     public MyMod() {
-        // Регистрируем события в новой системе
-        NeoForge.EVENT_BUS.register(ClientFoodTracker.class);
-        NeoForge.EVENT_BUS.register(ClientActionEvents.class);
-        NeoForge.EVENT_BUS.register(ModClientEvents.class);
-        NeoForge.EVENT_BUS.register(ModSakuraParticles.class);
+        NeoForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(new ClientFoodTracker());
+        NeoForge.EVENT_BUS.register(new ClientActionEvents());
+        NeoForge.EVENT_BUS.register(new ModClientEvents());
+        NeoForge.EVENT_BUS.register(new ModSakuraParticles());
     }
 
-    // --- 1. ТРЕКЕР СЫТОСТИ ---
     public static class ClientFoodTracker {
         public static float localSaturation = 0.0f;
         private static int lastFoodLevel = 20;
 
         public static void onFoodEaten(ItemStack stack) {
             if (stack.getItem().isEdible()) {
-                FoodProperties props = stack.getItem().getComponents().get(net.minecraft.core.component.DataComponents.FOOD);
+                // В 1.21.4 компоненты еды извлекаются через метод .get()
+                FoodProperties props = stack.get(DataComponents.FOOD);
                 if (props != null) {
                     localSaturation = Math.min(20.0f, localSaturation + (props.nutrition() * 2.0f * props.saturation()));
                 }
@@ -47,7 +47,7 @@ public class MyMod {
         }
 
         @SubscribeEvent
-        public static void tick(ClientTickEvent.Post event) {
+        public void tick(ClientTickEvent.Post event) {
             Player player = Minecraft.getInstance().player;
             if (player != null && player.tickCount % 20 == 0) {
                 int currentFood = player.getFoodData().getFoodLevel();
@@ -59,29 +59,27 @@ public class MyMod {
         }
     }
 
-    // --- 2. ОТСЛЕЖИВАНИЕ ДЕЙСТВИЙ (ОГОНЬ И ЕДА) ---
     public static class ClientActionEvents {
         @SubscribeEvent
-        public static void onRenderFireOverlay(RenderBlockScreenEffectEvent event) {
+        public void onRenderFireOverlay(RenderBlockScreenEffectEvent event) {
             if (event.getOverlayType() == RenderBlockScreenEffectEvent.OverlayType.FIRE) {
-                event.getPoseStack().translate(0.0D, -0.35D, 0.0D); // Уменьшаем огонь на 75%
+                event.getPoseStack().translate(0.0D, -0.35D, 0.0D);
             }
         }
 
         @SubscribeEvent
-        public static void onItemUseFinish(LivingEntityUseItemEvent.Finish event) {
+        public void onItemUseFinish(LivingEntityUseItemEvent.Finish event) {
             if (event.getEntity() instanceof Player && event.getEntity().level().isClientSide() && event.getEntity() == Minecraft.getInstance().player) {
                 ClientFoodTracker.onFoodEaten(event.getItem());
             }
         }
     }
 
-    // --- 3. ИНТЕРФЕЙС (БРОНЯ, ПРОЧНОСТЬ, СЫТОСТЬ) ---
     public static class ModClientEvents {
         private static final ResourceLocation ICONS = ResourceLocation.withDefaultNamespace("textures/gui/icons.png");
 
         @SubscribeEvent
-        public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Post event) {
+        public void onRenderGuiOverlay(RenderGuiOverlayEvent.Post event) {
             if (event.getOverlay().id().equals(VanillaGuiOverlay.FOOD_LEVEL.id())) {
                 Minecraft mc = Minecraft.getInstance();
                 Player player = mc.player;
@@ -130,10 +128,9 @@ public class MyMod {
         }
     }
 
-    // --- 4. ПАРТИКЛЫ САКУРЫ ---
     public static class ModSakuraParticles {
         @SubscribeEvent
-        public static void onMouseClick(InputEvent.MouseButtonPressed.Pre event) {
+        public void onMouseClick(InputEvent.MouseButtonPressed.Pre event) {
             Minecraft mc = Minecraft.getInstance();
             if (event.getButton() == 0 && mc.player != null && mc.level != null && mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.ENTITY) {
                 net.minecraft.world.entity.Entity target = ((EntityHitResult) mc.hitResult).getEntity();
@@ -144,3 +141,4 @@ public class MyMod {
         }
     }
 }
+
