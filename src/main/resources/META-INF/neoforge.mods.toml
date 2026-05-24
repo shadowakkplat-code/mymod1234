@@ -1,0 +1,10 @@
+modLoader="javafml"
+loaderVersion="[21,)"
+license="MIT"
+
+[[mods]]
+modId="mymod"
+version="1.0.0"
+displayName="My PvP Mod"
+authors="shadowakkplat-code"
+description="Custom PvP Client features"
