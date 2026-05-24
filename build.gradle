@@ -1,16 +1,8 @@
-buildscript {
-    repositories {
-        maven { url = 'https://minecraftforge.net' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.0.+', changing: true
-    }
+plugins {
+    id 'net.minecraftforge.gradle' version '6.1.3'
+    id 'eclipse'
+    id 'idea'
 }
-
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
 
 version = '1.0.0'
 group = 'com.example.mymod'
@@ -25,7 +17,7 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/main/resources' }
 
 repositories {
-    maven { name = 'Forge'; url = 'https://minecraftforge.net/' }
+    maven { name = 'Forge'; url = 'https://minecraftforge.net' }
     mavenCentral()
 }
 
