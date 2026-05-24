@@ -9,7 +9,7 @@ base { archivesName = 'PvPClientMod-1.21.4' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 neoForge {
-    version = '21.4.11'
+    version = '21.4.147'
 }
 
 sourceSets.main.resources { srcDir 'src/main/resources' }
