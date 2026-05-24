@@ -18,11 +18,11 @@ repositories {
     mavenCentral()
 }
 
-// Принудительно генерируем правильный файл mods.toml прямо внутрь .jar
+// Принудительно генерируем правильный файл neoforge.mods.toml прямо внутрь .jar
 jar {
     into('META-INF') {
         from(stringToTxtFile("""
-modLoader="javafml"
+modLoader="neoforge"
 loaderVersion="[21,)"
 license="MIT"
 
@@ -33,12 +33,12 @@ displayName="My PvP Mod"
 authors="shadowakkplat-code"
 description="Custom PvP Client features"
 """))
-        rename { 'mods.toml' }
+        rename { 'neoforge.mods.toml' }
     }
 }
 
 def stringToTxtFile(String content) {
-    def tempFile = File.createTempFile("mods", "toml")
+    def tempFile = File.createTempFile("neoforge.mods", "toml")
     tempFile.text = content
     return tempFile
 }
