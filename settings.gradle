@@ -1,8 +1,1 @@
-pluginManagement {
-    repositories {
-        maven { url = 'https://minecraftforge.net' }
-        gradlePluginPortal()
-        mavenCentral()
-    }
-}
 rootProject.name = 'mymod'
