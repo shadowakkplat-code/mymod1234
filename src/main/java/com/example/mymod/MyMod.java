@@ -11,25 +11,25 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderBlockScreenEffectEvent;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RenderBlockScreenEffectEvent;
+import net.neoforged.neoforge.client.event.RenderGuiOverlayEvent;
+import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 
 @Mod("mymod")
 public class MyMod {
     public MyMod() {
-        // Регистрируем все наши события в системе Forge
-        MinecraftForge.EVENT_BUS.register(ClientFoodTracker.class);
-        MinecraftForge.EVENT_BUS.register(ClientActionEvents.class);
-        MinecraftForge.EVENT_BUS.register(ModClientEvents.class);
-        MinecraftForge.EVENT_BUS.register(ModSakuraParticles.class);
+        // Регистрируем события в новой системе
+        NeoForge.EVENT_BUS.register(ClientFoodTracker.class);
+        NeoForge.EVENT_BUS.register(ClientActionEvents.class);
+        NeoForge.EVENT_BUS.register(ModClientEvents.class);
+        NeoForge.EVENT_BUS.register(ModSakuraParticles.class);
     }
 
     // --- 1. ТРЕКЕР СЫТОСТИ ---
@@ -47,9 +47,10 @@ public class MyMod {
         }
 
         @SubscribeEvent
-        public static void tick(TickEvent.PlayerTickEvent event) {
-            if (event.side.isClient() && event.player == Minecraft.getInstance().player && event.player.tickCount % 20 == 0) {
-                int currentFood = event.player.getFoodData().getFoodLevel();
+        public static void tick(ClientTickEvent.Post event) {
+            Player player = Minecraft.getInstance().player;
+            if (player != null && player.tickCount % 20 == 0) {
+                int currentFood = player.getFoodData().getFoodLevel();
                 if (currentFood < lastFoodLevel) localSaturation = 0.0f;
                 lastFoodLevel = currentFood;
                 if (localSaturation > 0) localSaturation -= 0.005f;
@@ -89,7 +90,6 @@ public class MyMod {
                     int left = event.getWindow().getGuiScaledWidth() / 2 + 91;
                     int top = event.getWindow().getGuiScaledHeight() - 39;
 
-                    // Отрендерить сытость
                     RenderSystem.setShaderTexture(0, ICONS);
                     for (int i = 0; i < 10; ++i) {
                         if (ClientFoodTracker.localSaturation > i * 2) {
@@ -99,7 +99,6 @@ public class MyMod {
                         }
                     }
 
-                    // Отрендерить мини-броню и прочность
                     int armorTop = top - 12;
                     int currentX = left - 9;
                     EquipmentSlot[] slots = {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD};
