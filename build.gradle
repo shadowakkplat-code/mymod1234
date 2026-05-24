@@ -22,8 +22,8 @@ repositories {
 jar {
     into('META-INF') {
         from(stringToTxtFile("""
-modLoader="neoforge"
-loaderVersion="[21,)"
+modLoader="javafml"
+loaderVersion="[1,)"
 license="MIT"
 
 [[mods]]
