@@ -8,7 +8,6 @@ base { archivesName = 'PvPClientMod-1.21.4' }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-// Этот блок автоматически и правильно создаст манифест внутри .jar
 neoForge {
     version = '21.4.147'
     
@@ -23,6 +22,21 @@ sourceSets.main.resources { srcDir 'src/main/resources' }
 
 repositories {
     mavenCentral()
+}
+
+// Этот блок принудительно записывает метаданные мода при сборке JAR
+jar {
+    manifest {
+        attributes([
+            "Specification-Title"     : "mymod",
+            "Specification-Vendor"    : "shadowakkplat-code",
+            "Specification-Version"   : "1",
+            "Implementation-Title"    : "My PvP Mod",
+            "Implementation-Version"  : "1.0.0",
+            "Implementation-Vendor"   : "shadowakkplat-code",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
 }
 
 tasks.withType(ProcessResources).configureEach {
