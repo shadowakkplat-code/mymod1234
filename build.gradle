@@ -1,27 +1,19 @@
 plugins {
-    id 'net.minecraftforge.gradle' version '6.0.25'
-    id 'eclipse'
-    id 'idea'
+    id 'net.neoforged.moddev' version '1.0.21'
 }
 
 version = '1.0.0'
 group = 'com.example.mymod'
-archivesBaseName = 'mymod'
+base { archivesName = 'PvPClientMod-1.21.4' }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-minecraft {
-    mappings channel: 'official', version: '1.21.4'
+neoForge {
+    version = '21.4.11'
 }
 
 sourceSets.main.resources { srcDir 'src/main/resources' }
 
 repositories {
-    maven { name = 'Forge'; url = 'https://minecraftforge.net' }
-    maven { url = 'https://spongepowered.org' }
     mavenCentral()
-}
-
-dependencies {
-    minecraft 'net.minecraftforge:forge:1.21.4-54.0.1'
 }
