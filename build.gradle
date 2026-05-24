@@ -8,12 +8,23 @@ base { archivesName = 'PvPClientMod-1.21.4' }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+// Этот блок автоматически и правильно создаст манифест внутри .jar
 neoForge {
     version = '21.4.147'
+    
+    mods {
+        mymod {
+            sourceSet sourceSets.main
+        }
+    }
 }
 
 sourceSets.main.resources { srcDir 'src/main/resources' }
 
 repositories {
     mavenCentral()
+}
+
+tasks.withType(ProcessResources).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
