@@ -70,7 +70,9 @@ public class MyMod {
                     float height = (float) target.getClass().getMethod("getBbHeight").invoke(target);
                     Class<?> ptClass = Class.forName("net.minecraft.core.particles.ParticleTypes");
                     Object cherry = ptClass.getField("CHERRY_LEAVES").get(null);
-                    Method addP = level.getClass().getMethod("addParticle", Object.forName("net.minecraft.core.particles.ParticleOptions"), double.class, double.class, double.class, double.class, double.class, double.class);
+                    
+                    // Ошибка исправлена: заменено Object.forName на Class.forName
+                    Method addP = level.getClass().getMethod("addParticle", Class.forName("net.minecraft.core.particles.ParticleOptions"), double.class, double.class, double.class, double.class, double.class, double.class);
                     java.util.Random r = new java.util.Random();
                     for (int i = 0; i < 15; i++) {
                         addP.invoke(level, cherry, x, y + (height / 2.0), z, (r.nextDouble()-0.5)*0.2, r.nextDouble()*0.2, (r.nextDouble()-0.5)*0.2);
