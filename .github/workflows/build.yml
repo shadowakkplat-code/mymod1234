@@ -10,14 +10,12 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Setup Gradle
+      - name: Setup Gradle 8.11.1
         uses: gradle/actions/setup-gradle@v4
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper
+        with:
+          gradle-version: '8.11.1'
       - name: Build with Gradle
-        run: |
-          chmod +x gradlew
-          ./gradlew jar
+        run: gradle jar
       - name: Upload Mod Jar
         uses: actions/upload-artifact@v4
         with:
