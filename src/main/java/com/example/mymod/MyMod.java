@@ -1,5 +1,7 @@
 package com.example.mymod;
 
+import com.example.mymod.left.LeftHandConfig;
+import com.example.mymod.right.RightHandConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
@@ -19,14 +21,6 @@ import org.lwjgl.glfw.GLFW;
 public class MyMod {
     private static boolean wasClicking = false;
     private static boolean wasKeyKDown = false;
-    
-    // Переменные калибровки для ПРАВОЙ руки
-    public static float swordY = 0.10f;
-    public static float swordZ = -0.45f;
-
-    // Переменные калибровки для ЛЕВОЙ руки (Перенесены сюда, чтобы не сбрасывались)
-    public static float leftY = 0.10f;
-    public static float leftZ = -0.45f;
 
     public MyMod() {
         NeoForge.EVENT_BUS.register(this);
@@ -89,14 +83,14 @@ public class MyMod {
             PoseStack poseStack = event.getPoseStack();
             
             if (event.getHand() == InteractionHand.MAIN_HAND) {
-                // ПРАВАЯ РУКА: Использует swordY и swordZ
+                // ПРАВАЯ РУКА: Берет данные из com.example.mymod.right
                 poseStack.scale(0.55f, 0.55f, 0.55f);
-                poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
+                poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ); 
             } 
             else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // ЛЕВАЯ РУКА: Использует глобальные переменные leftY и leftZ из MyMod
+                // ЛЕВАЯ РУКА: Берет данные из com.example.mymod.left
                 poseStack.scale(0.275f, 0.275f, 0.275f);
-                poseStack.translate(-0.24D, (double)MyMod.leftY, (double)MyMod.leftZ); 
+                poseStack.translate(-0.24D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ); 
             }
         }
     }
