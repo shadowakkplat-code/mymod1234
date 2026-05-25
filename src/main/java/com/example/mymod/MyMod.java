@@ -24,6 +24,10 @@ public class MyMod {
     public static float swordY = 0.10f;
     public static float swordZ = -0.45f;
 
+    // Переменные калибровки для ЛЕВОЙ руки (Перенесены сюда, чтобы не сбрасывались)
+    public static float leftY = 0.10f;
+    public static float leftZ = -0.45f;
+
     public MyMod() {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
@@ -84,19 +88,15 @@ public class MyMod {
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
             
-            // ИСПРАВЛЕНО: Убрали мешающие pushPose/popPose, которые моментально сбрасывали наши координаты
             if (event.getHand() == InteractionHand.MAIN_HAND) {
-                // ПРАВАЯ РУКА: Обычный масштаб вашего клиента (0.55f)
+                // ПРАВАЯ РУКА: Использует swordY и swordZ
                 poseStack.scale(0.55f, 0.55f, 0.55f);
                 poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
             } 
             else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // ЛЕВАЯ РУКА: Уменьшена ровно в 2 раза относительно правой (0.275f)
+                // ЛЕВАЯ РУКА: Использует глобальные переменные leftY и leftZ из MyMod
                 poseStack.scale(0.275f, 0.275f, 0.275f);
-                
-                // Изменяем координаты на основе независимых переменных из ConfigScreen.
-                // Множитель -0.24D компенсирует внутреннее ванильное отзеркаливание OFF_HAND по X.
-                poseStack.translate(-0.24D, (double)ConfigScreen.leftY, (double)ConfigScreen.leftZ); 
+                poseStack.translate(-0.24D, (double)MyMod.leftY, (double)MyMod.leftZ); 
             }
         }
     }
