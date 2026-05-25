@@ -11,17 +11,15 @@ import net.neoforged.neoforge.common.NeoForge;
 public class MyMod {
     private static boolean wasClicking = false;
     
-    // Глобальные переменные калибровки меча
+    // Переменные положения меча
     public static float swordY = 0.10f;
     public static float swordZ = -0.45f;
 
-    // Конструктор мода с автоматическим подключением к Mod Event Bus (шина NeoForge 1.21.4)
     public MyMod(ModContainer container, IEventBus modBus) {
-        // 1. Регистрируем мод в общей шине событий (для тиков игрока и рук)
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         
-        // 2. ХАК: Регистрируем модуль брони и меню СРАЗУ в двух шинах, чтобы игра их точно увидела
+        // Регистрируем броню в правильных системных шинах NeoForge 1.21.4
         NeoForge.EVENT_BUS.register(new MyArmor());
         modBus.register(new MyArmor());
     }
@@ -88,7 +86,7 @@ public class MyMod {
         } catch (Exception ignored) {}
     }
 
-    // Ловим открытие меню ESC через двойную проверку шин событий
+    // Безопасный динамический поиск метода builder по его имени
     @SubscribeEvent
     public void onScreenInit(net.neoforged.neoforge.client.event.ScreenEvent.Init.Post event) {
         try {
@@ -99,19 +97,39 @@ public class MyMod {
                 Class<?> componentClass = Class.forName("net.minecraft.network.chat.Component");
                 Object buttonText = componentClass.getMethod("literal", String.class).invoke(null, "⚔ PvP Mod Config");
                 
-                Class<?> buttonClass = Class.forName("net.minecraft.client.gui.components.Button");
-                Object builder = buttonClass.getMethod("builder", componentClass, buttonClass.getDeclaredClasses()).invoke(null, buttonText, (net.minecraft.client.gui.components.Button.OnPress) b -> {
-                    try {
-                        Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
-                        Object mc = mcClass.getMethod("getInstance").invoke(null);
-                        mcClass.getMethod("setScreen", Class.forName("net.minecraft.client.gui.screens.Screen")).invoke(mc, new ConfigScreen());
-                    } catch (Exception ignored) {}
-                });
+                Class<?> buttonClass = Class.forName("net.minecraft.client.Gui.components.Button");
+                if (buttonClass == null) buttonClass = Class.forName("net.minecraft.client.gui.components.Button");
                 
-                builder.getClass().getMethod("bounds", int.class, int.class, int.class, int.class).invoke(builder, 10, 10, 110, 20);
-                Object pvpButton = builder.getClass().getMethod("build").invoke(builder);
+                // Ищем метод "builder" перебором, полностью обходя любые ошибки типов аргументов
+                Method builderMethod = null;
+                for (Method m : buttonClass.getMethods()) {
+                    if (m.getName().equals("builder")) {
+                        builderMethod = m;
+                        break;
+                    }
+                }
                 
-                event.addListener((net.minecraft.client.gui.components.events.GuiEventListener) pvpButton);
+                if (builderMethod != null) {
+                    // Создаем клик-действие для открытия нашего ConfigScreen
+                    Object openAction = java.lang.reflect.Proxy.newProxyInstance(
+                        buttonClass.getClassLoader(),
+                        buttonClass.getDeclaredClasses(),
+                        (proxy, method, args) -> {
+                            if (method.getName().equals("onPress") || method.getName().contains("Press")) {
+                                Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
+                                Object mc = mcClass.getMethod("getInstance").invoke(null);
+                                mcClass.getMethod("setScreen", Class.forName("net.minecraft.client.gui.screens.Screen")).invoke(mc, new ConfigScreen());
+                            }
+                            return null;
+                        }
+                    );
+
+                    Object builder = builderMethod.invoke(null, buttonText, openAction);
+                    builder.getClass().getMethod("bounds", int.class, int.class, int.class, int.class).invoke(builder, 10, 10, 110, 20);
+                    Object pvpButton = builder.getClass().getMethod("build").invoke(builder);
+                    
+                    event.addListener((net.minecraft.client.gui.components.events.GuiEventListener) pvpButton);
+                }
             }
         } catch (Exception ignored) {}
     }
