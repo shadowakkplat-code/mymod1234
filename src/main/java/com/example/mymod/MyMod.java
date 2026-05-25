@@ -71,16 +71,15 @@ public class MyMod {
             }
         } catch (Exception ignored) {}
     }
+
     @SubscribeEvent
-    public void onRenderGui(net.neoforged.neoforge.client.event.RenderGuiOverlayEvent event) {
+    public void onRenderGui(net.neoforged.neoforge.client.event.RenderGuiLayerEvent.Post event) {
         try {
-            if (!event.getClass().getName().contains("Post")) return;
+            Method getLayerMethod = event.getClass().getMethod("getLayer");
+            Object layer = getLayerMethod.invoke(event);
+            String layerId = layer.getClass().getMethod("id").invoke(layer).toString();
             
-            Method getOverlayMethod = event.getClass().getMethod("getOverlay");
-            Object overlay = getOverlayMethod.invoke(event);
-            String overlayId = overlay.getClass().getMethod("id").invoke(overlay).toString();
-            
-            if (overlayId.contains("food_level") || overlayId.contains("FOOD_LEVEL")) {
+            if (layerId.contains("food_level") || layerId.contains("FOOD_LEVEL")) {
                 Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
                 Object mc = mcClass.getMethod("getInstance").invoke(null);
                 Object player = mcClass.getField("player").get(mc);
