@@ -11,7 +11,7 @@ public class MyArmor {
             Object layer = getLayerMethod.invoke(event);
             String name = layer.toString();
             
-            // Привязываемся строго к финальному слою хотбара, когда экран уже готов к рисованию
+            // Привязываемся к слою хотбара
             if (name.contains("HOTBAR") || name.contains("hotbar")) {
                 Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
                 Object mc = mcClass.getMethod("getInstance").invoke(null);
@@ -23,9 +23,9 @@ public class MyArmor {
                     int screenHeight = (int) window.getClass().getMethod("getGuiScaledHeight").invoke(window);
                     Object graphics = event.getGuiGraphics();
                     
-                    // Позиция: ровно над вашими окорочками еды (правая часть экрана)
+                    // Позиция ровно над полоской голода (правая часть экрана)
                     int left = screenWidth / 2 + 91;
-                    int top = screenHeight - 53;
+                    int top = screenHeight - 53; // Высота над окорочками еды
                     
                     Class<?> esClass = Class.forName("net.minecraft.world.entity.EquipmentSlot");
                     Object[] slots = {
@@ -35,11 +35,7 @@ public class MyArmor {
                         esClass.getField("HEAD").get(null)
                     };
                     
-                    Object font = mcClass.getField("font").get(mc);
                     Class<?> isClass = Class.forName("net.minecraft.world.item.ItemStack");
-                    Class<?> itemRenderTypeClass = Class.forName("net.minecraft.world.item.ItemDisplayContext");
-                    Object guiContext = itemRenderTypeClass.getField("GUI").get(null);
-                    
                     int currentX = left - 9;
 
                     for (Object slot : slots) {
@@ -47,34 +43,17 @@ public class MyArmor {
                         boolean isEmpty = (boolean) armorStack.getClass().getMethod("isEmpty").invoke(armorStack);
                         
                         if (!isEmpty) {
-                            // 1. Официальный метод отрисовки 3D-иконки брони для 1.21.4
+                            // Отрисовка только чистой мини-иконки надетой брони
                             Object pose = graphics.getClass().getMethod("pose").invoke(graphics);
                             pose.getClass().getMethod("pushPose").invoke(pose);
                             pose.getClass().getMethod("translate", float.class, float.class, float.class).invoke(pose, (float)currentX, (float)top, 0.0f);
                             pose.getClass().getMethod("scale", float.class, float.class, float.class).invoke(pose, 0.75f, 0.75f, 0.75f);
                             
-                            // Вызываем актуальный метод renderItem, который принудительно выведет вещь на экран
+                            // Выводим только иконку предмета на экран
                             graphics.getClass().getMethod("renderItem", isClass, int.class, int.class).invoke(graphics, armorStack, 0, 0);
                             pose.getClass().getMethod("popPose").invoke(pose);
-
-                            // 2. Отображение точных PvP-цифр прочности "Текущая/Максимальная"
-                            if ((boolean) armorStack.getClass().getMethod("isDamageableItem").invoke(armorStack)) {
-                                int maxDmg = (int) armorStack.getClass().getMethod("getMaxDamage").invoke(armorStack);
-                                int currentDurability = maxDmg - (int) armorStack.getClass().getMethod("getDamageValue").invoke(armorStack);
-                                
-                                pose.getClass().getMethod("pushPose").invoke(pose);
-                                // Сдвигаем влево под иконку и уменьшаем размер текста, чтобы "X/Y" выглядело компактно
-                                pose.getClass().getMethod("translate", float.class, float.class, float.class).invoke(pose, (float)(currentX - 25), (float)(top + 3), 0.0f);
-                                pose.getClass().getMethod("scale", float.class, float.class, float.class).invoke(pose, 0.5f, 0.5f, 0.5f);
-                                
-                                String textDurability = currentDurability + "/" + maxDmg;
-                                int color = ((float) currentDurability / maxDmg < 0.25f) ? 0xFFFF5555 : 0xFFFFFFFF;
-                                
-                                graphics.getClass().getMethod("drawString", font.getClass(), String.class, float.class, float.class, int.class, boolean.class)
-                                        .invoke(graphics, font, textDurability, 0.0f, 0.0f, color, true);
-                                pose.getClass().getMethod("popPose").invoke(pose);
-                            }
-                            currentX -= 36; // Идеальное PvP-расстояние между элементами сета
+                            
+                            currentX -= 18; // Уменьшаем шаг, так как текста нет и иконки могут стоять компактнее
                         }
                     }
                 }
