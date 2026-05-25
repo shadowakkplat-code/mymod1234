@@ -9,7 +9,6 @@ public class MyArmor {
     // Контейнер класса
 }
 
-// МЕНЮ ПРАВОЙ РУКИ (Клавиша K)
 class RightConfigScreen extends Screen {
     protected RightConfigScreen() { super(Component.literal("Настройка правой руки")); }
 
@@ -41,8 +40,6 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "v Ниже (П)", cx, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cx, cy - 20, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (П)", cx, cy + 5, 100, 20, mouseX, mouseY);
-        
-        // Новые кнопки перемещения по бокам
         drawCustomButton(graphics, "<= Влево (П)", cx, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (П)", cx, cy + 55, 100, 20, mouseX, mouseY);
         
@@ -59,12 +56,10 @@ class RightConfigScreen extends Screen {
             if (mx >= cx && mx < cx + 100) {
                 if (my >= cy - 70 && my < cy - 50) { RightHandConfig.rightY += 0.05f; return true; }
                 if (my >= cy - 45 && my < cy - 25) { RightHandConfig.rightY -= 0.05f; return true; }
-                if (my >= cy - 20 && my < cy == 0) { RightHandConfig.rightZ -= 0.05f; return true; }
+                if (my >= cy - 20 && my < cy) { RightHandConfig.rightZ -= 0.05f; return true; }
                 if (my >= cy + 5 && my < cy + 25) { RightHandConfig.rightZ += 0.05f; return true; }
-                // Обработка новых кнопок оси X
                 if (my >= cy + 30 && my < cy + 50) { RightHandConfig.rightX -= 0.05f; return true; }
                 if (my >= cy + 55 && my < cy + 75) { RightHandConfig.rightX += 0.05f; return true; }
-                
                 if (my >= cy + 85 && my < cy + 105) {
                     if (this.minecraft != null) this.minecraft.setScreen(null);
                     return true;
@@ -75,7 +70,6 @@ class RightConfigScreen extends Screen {
     }
 }
 
-// МЕНЮ ЛЕВОЙ РУКИ (Клавиша J)
 class LeftConfigScreen extends Screen {
     protected LeftConfigScreen() { super(Component.literal("Настройка левой руки")); }
 
@@ -107,8 +101,6 @@ class LeftConfigScreen extends Screen {
         drawCustomButton(graphics, "v Ниже (Л)", cx, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cx, cy - 20, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (Л)", cx, cy + 5, 100, 20, mouseX, mouseY);
-        
-        // Новые кнопки перемещения по бокам
         drawCustomButton(graphics, "<= Влево (Л)", cx, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (Л)", cx, cy + 55, 100, 20, mouseX, mouseY);
         
@@ -125,12 +117,10 @@ class LeftConfigScreen extends Screen {
             if (mx >= cx && mx < cx + 100) {
                 if (my >= cy - 70 && my < cy - 50) { LeftHandConfig.leftY += 0.05f; return true; }
                 if (my >= cy - 45 && my < cy - 25) { LeftHandConfig.leftY -= 0.05f; return true; }
-                if (my >= cy - 20 && my < cy == 0) { LeftHandConfig.leftZ -= 0.05f; return true; }
+                if (my >= cy - 20 && my < cy) { LeftHandConfig.leftZ -= 0.05f; return true; }
                 if (my >= cy + 5 && my < cy + 25) { LeftHandConfig.leftZ += 0.05f; return true; }
-                // Обработка новых кнопок оси X
                 if (my >= cy + 30 && my < cy + 50) { LeftHandConfig.leftX -= 0.05f; return true; }
                 if (my >= cy + 55 && my < cy + 75) { LeftHandConfig.leftX += 0.05f; return true; }
-                
                 if (my >= cy + 85 && my < cy + 105) {
                     if (this.minecraft != null) this.minecraft.setScreen(null);
                     return true;
