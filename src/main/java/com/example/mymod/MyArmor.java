@@ -68,7 +68,7 @@ class ConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            // КЛИКИ ЛЕВОЙ РУКИ (Изменяют MyConfig.left)
+            // КЛИКИ ЛЕВОЙ РУКИ
             if (mx >= cxLeft && mx <= cxLeft + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
                     MyConfig.leftY += 0.05f;
@@ -88,7 +88,7 @@ class ConfigScreen extends Screen {
                 }
             }
             
-            // КЛИКИ ПРАВОЙ РУКИ (Изменяют MyConfig.right)
+            // КЛИКИ ПРАВОЙ РУКИ
             if (mx >= cxRight && mx <= cxRight + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
                     MyConfig.rightY += 0.05f;
