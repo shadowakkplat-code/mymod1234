@@ -2,6 +2,7 @@ package com.example.mymod;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
@@ -19,15 +20,18 @@ public class MyMod {
     private static boolean wasClicking = false;
     private static boolean wasKeyKDown = false;
     
+    // Координаты для ПРАВОЙ руки
     public static float swordY = 0.10f;
     public static float swordZ = -0.45f;
+    
+    // Новые координаты для ЛЕВОЙ руки
+    public static float leftSwordY = 0.10f;
+    public static float leftSwordZ = -0.45f;
 
     public MyMod() {
-        // РЕГИСТРИРУЕМ ТОЛЬКО ТЕ КЛАССЫ, ГДЕ ЕСТЬ @SubscribeEvent
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyHud()); 
-        // Строка с MyArmor полностью удалена, игра больше не будет вылетать!
     }
 
     @SubscribeEvent
@@ -82,8 +86,17 @@ public class MyMod {
         
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
-            poseStack.scale(0.55f, 0.55f, 0.55f);
-            poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
+            
+            // Проверяем, какая рука сейчас отрисовывается
+            if (event.getHand() == InteractionHand.MAIN_HAND) {
+                // Настройки для Правой руки (Главной)
+                poseStack.scale(0.55f, 0.55f, 0.55f);
+                poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
+            } else {
+                // Настройки для Левой руки (Второй)
+                poseStack.scale(0.55f, 0.55f, 0.55f);
+                poseStack.translate(-0.12D, (double)leftSwordY, (double)leftSwordZ); 
+            }
         }
     }
 }
