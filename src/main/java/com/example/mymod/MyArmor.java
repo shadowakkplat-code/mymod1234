@@ -1,7 +1,6 @@
 package com.example.mymod;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -40,16 +39,16 @@ class ConfigScreen extends Screen {
         int cxLeft = this.width / 2 - 120;  
         int cxRight = this.width / 2 + 20;  
         
-        graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", cxLeft + 50, cy - 80, 0x55FF55);
+        graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА (0.5x) ]", cxLeft + 50, cy - 80, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 80, 0xFF5555);
 
-        // Кнопки управления ЛЕВОЙ РУКОЙ
+        // Кнопки ЛЕВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (Л)", cxLeft, cy + 25, 100, 20, mouseX, mouseY);
         
-        // Кнопки управления ПРАВОЙ РУКОЙ
+        // Кнопки ПРАВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy, 100, 20, mouseX, mouseY);
@@ -67,27 +66,27 @@ class ConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            // ОБРАБОТКА НАЖАТИЙ НА КНОПКИ ЛЕВОЙ РУКИ
+            // ОБРАБОТКА ЛЕВОЙ РУКИ (ИСПРАВЛЕНО: Изменяем значения нового файла)
             if (mx >= cxLeft && mx <= cxLeft + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
-                    MyMod.leftSwordY += 0.05f;
+                    MyLeftHand.leftY += 0.05f;
                     return true;
                 }
                 else if (my >= cy - 35 && my <= cy - 15) {
-                    MyMod.leftSwordY -= 0.05f;
+                    MyLeftHand.leftY -= 0.05f;
                     return true;
                 }
                 else if (my >= cy && my <= cy + 20) {
-                    MyMod.leftSwordZ -= 0.05f;
+                    MyLeftHand.leftZ -= 0.05f;
                     return true;
                 }
                 else if (my >= cy + 25 && my <= cy + 45) {
-                    MyMod.leftSwordZ += 0.05f;
+                    MyLeftHand.leftZ += 0.05f;
                     return true;
                 }
             }
             
-            // ОБРАБОТКА НАЖАТИЙ НА КНОПКИ ПРАВОЙ РУКИ
+            // ОБРАБОТКА ПРАВОЙ РУКИ
             if (mx >= cxRight && mx <= cxRight + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
                     MyMod.swordY += 0.05f;
@@ -107,7 +106,6 @@ class ConfigScreen extends Screen {
                 }
             }
             
-            // КНОПКА ЗАКРЫТЬ
             int closeX = this.width / 2 - 50;
             if (mx >= closeX && mx <= closeX + 100 && my >= cy + 65 && my <= cy + 85) {
                 if (this.minecraft != null) {
