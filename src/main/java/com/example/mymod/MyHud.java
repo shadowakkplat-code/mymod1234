@@ -22,7 +22,6 @@ public class MyHud {
         int screenWidth = graphics.guiWidth();
         int screenHeight = graphics.guiHeight();
 
-        // ОТРИСОВКА УВЕЛИЧЕННОЙ БРОНИ (Справа налево, размер 82%, без соприкосновения)
         int leftArmor = screenWidth / 2 + 75; 
         int topArmor = screenHeight - 54; 
         
@@ -37,22 +36,17 @@ public class MyHud {
 
         for (EquipmentSlot slot : slots) {
             ItemStack armorStack = mc.player.getItemBySlot(slot);
-            
             if (!armorStack.isEmpty()) {
                 PoseStack poseStack = graphics.pose();
                 poseStack.pushPose();
                 
-                // Перемещаем и масштабируем иконку брони
                 poseStack.translate(currentX, topArmor, 0.0f);
                 poseStack.scale(0.82f, 0.82f, 0.82f);
                 
-                // Рендерим сам предмет и полоску его прочности
                 graphics.renderItem(armorStack, 0, 0);
                 graphics.renderItemDecorations(mc.font, armorStack, 0, 0);
                 
                 poseStack.popPose();
-                
-                // Смещаем X для следующего элемента (размер 16 пикселей * масштаб + отступ)
                 currentX -= 15; 
             }
         }
