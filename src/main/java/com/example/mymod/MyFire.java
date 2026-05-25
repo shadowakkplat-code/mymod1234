@@ -8,7 +8,7 @@ public class MyFire {
         try {
             Object type = event.getOverlayType();
             if (type.toString().contains("FIRE") || type.toString().contains("fire")) {
-                event.getPoseStack().translate(0.0D, -0.40D, 0.0D); // Ровно 84%
+                event.getPoseStack().translate(0.0D, -0.40D, 0.0D); // Ровно 80% скрытия
             }
         } catch (Exception ignored) {}
     }
