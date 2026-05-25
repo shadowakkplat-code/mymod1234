@@ -24,7 +24,7 @@ public class MyMod {
     public static float swordY = 0.10f;
     public static float swordZ = -0.45f;
     
-    // Новые координаты для ЛЕВОЙ руки
+    // Координаты для ЛЕВОЙ руки
     public static float leftSwordY = 0.10f;
     public static float leftSwordZ = -0.45f;
 
@@ -87,13 +87,14 @@ public class MyMod {
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
             
-            // Проверяем, какая рука сейчас отрисовывается
+            // ИСПРАВЛЕНО: Теперь руки жестко разделены по независимым переменным
             if (event.getHand() == InteractionHand.MAIN_HAND) {
-                // Настройки для Правой руки (Главной)
+                // Масштаб и сдвиг для ПРАВОЙ (главной) руки
                 poseStack.scale(0.55f, 0.55f, 0.55f);
                 poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
-            } else {
-                // Настройки для Левой руки (Второй)
+            } else if (event.getHand() == InteractionHand.OFF_HAND) {
+                // Масштаб и сдвиг для ЛЕВОЙ (второй) руки.
+                // Ось X инвертирована (-0.12D), чтобы предмет ложился ровно в левую руку
                 poseStack.scale(0.55f, 0.55f, 0.55f);
                 poseStack.translate(-0.12D, (double)leftSwordY, (double)leftSwordZ); 
             }
