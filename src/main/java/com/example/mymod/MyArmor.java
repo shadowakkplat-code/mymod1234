@@ -1,68 +1,12 @@
 package com.example.mymod;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 public class MyArmor {
-    
-    @SubscribeEvent
-    public void onRenderGui(RenderGuiEvent.Post event) {
-        Minecraft mc = Minecraft.getInstance();
-        
-        if (mc.screen != null || mc.player == null) return;
-
-        GuiGraphics graphics = event.getGuiGraphics();
-        int screenWidth = graphics.guiWidth();
-        int screenHeight = graphics.guiHeight();
-        
-        // 1. ОТРИСОВКА ИКОНОК БРОНИ
-        int leftArmor = screenWidth / 2 + 15; 
-        int topArmor = screenHeight - 51; 
-        
-        EquipmentSlot[] slots = {
-            EquipmentSlot.FEET, 
-            EquipmentSlot.LEGS,
-            EquipmentSlot.CHEST, 
-            EquipmentSlot.HEAD
-        };
-        
-        int currentX = leftArmor;
-
-        for (EquipmentSlot slot : slots) {
-            ItemStack armorStack = mc.player.getItemBySlot(slot);
-            
-            if (!armorStack.isEmpty()) {
-                PoseStack poseStack = graphics.pose();
-                poseStack.pushPose();
-                
-                poseStack.translate(currentX, topArmor, 0.0f);
-                poseStack.scale(0.77f, 0.77f, 0.77f);
-                
-                graphics.renderItem(armorStack, 0, 0);
-                graphics.renderItemDecorations(mc.font, armorStack, 0, 0);
-                
-                poseStack.popPose();
-                currentX += 24; 
-            }
-        }
-
-        // 2. ОТРИСОВКА ТЕКСТА СЫТОСТИ
-        float saturation = mc.player.getFoodData().getSaturationLevel();
-        String satText = String.format("%.1f", saturation); 
-        
-        int satX = screenWidth / 2 + 50; 
-        int satY = screenHeight - 48; 
-        
-        graphics.drawString(mc.font, satText, satX, satY, 0xFFFF55, true);
-    }
+    // Этот класс теперь отвечает только за вызов меню. Отрисовка HUD перенесена в MyHud.java
 }
 
 class ConfigScreen extends Screen {
@@ -90,14 +34,12 @@ class ConfigScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         
-        // Заменили мечи на классические текстовые стрелочки-разделители
         graphics.drawCenteredString(this.font, "-> PvP Клиент - Меню калибровки <-", this.width / 2, this.height / 2 - 85, 0xFFFFFF);
         graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 95, 0xAAAAAA);
         
         int cx = this.width / 2 - 50;
         int cy = this.height / 2;
         
-        // Все смайлики на кнопках заменены на стрелочки (^, v, ->, <-) и галочку [x]
         drawCustomButton(graphics, "^ Выше", cx, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже", cx, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше", cx, cy, 100, 20, mouseX, mouseY);
