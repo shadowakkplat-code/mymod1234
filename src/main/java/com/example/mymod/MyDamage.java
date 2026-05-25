@@ -11,12 +11,9 @@ public class MyDamage {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
-        // Вместо изменения hurtTime мы просто принудительно обнуляем углы поворота камеры.
-        // Это полностью убирает эффект тряски на экране, при этом не создавая мерцаний текстур.
+        // Если игрока бьют, полностью выключаем покачивание камеры (Roll)
         if (mc.player.hurtTime > 0) {
             event.setRoll(0.0f);
-            event.setPitch(event.getPitch());
-            event.setYaw(event.getYaw());
         }
     }
 }
