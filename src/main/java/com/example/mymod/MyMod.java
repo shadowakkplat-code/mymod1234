@@ -28,7 +28,8 @@ public class MyMod {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyHud()); 
-        // Класс MyLeftHand отсюда удален, так как всё объединено ниже
+        // Зарегистрировали отключение тряски от урона
+        NeoForge.EVENT_BUS.register(new MyDamage()); 
     }
 
     @SubscribeEvent
@@ -84,16 +85,21 @@ public class MyMod {
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
             
-            // ЖЕСТКОЕ РАЗДЕЛЕНИЕ РЕНДЕРИНГА РУК В ОДНОМ МЕСТЕ
             if (event.getHand() == InteractionHand.MAIN_HAND) {
-                // Настройки ПРАВОЙ руки: Обычный размер (0.55f), управление от своих кнопок
+                // ПРАВАЯ РУКА: Обычный размер (0.55f), управление от правых кнопок
+                poseStack.pushPose();
                 poseStack.scale(0.55f, 0.55f, 0.55f);
                 poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
+                poseStack.popPose();
             } 
             else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // Настройки ЛЕВОЙ руки: УМЕНЬШЕНА В 2 РАЗА (0.275f), берет координаты из ConfigScreen
+                // ЛЕВАЯ РУКА: Полная изоляция через push/pop матрицы
+                poseStack.pushPose();
+                // Уменьшаем модель ровно в 2 раза от правой (0.275f)
                 poseStack.scale(0.275f, 0.275f, 0.275f);
-                poseStack.translate(-0.24D, (double)ConfigScreen.leftY, (double)ConfigScreen.leftZ); 
+                // Применяем исключительно левые переменные!
+                poseStack.translate(-0.35D, (double)ConfigScreen.leftY, (double)ConfigScreen.leftZ); 
+                poseStack.popPose();
             }
         }
     }
