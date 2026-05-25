@@ -1,5 +1,7 @@
 package com.example.mymod;
 
+import com.example.mymod.left.LeftHandConfig;
+import com.example.mymod.right.RightHandConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -44,13 +46,13 @@ class ConfigScreen extends Screen {
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА  ]", cxLeft + 50, cy - 80, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 80, 0xFF5555);
 
-        // Кнопки ЛЕВОЙ РУКИ
+        // Левые кнопки управляют папкой left
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (Л)", cxLeft, cy + 25, 100, 20, mouseX, mouseY);
         
-        // Кнопки ПРАВОЙ РУКИ
+        // Правые кнопки управляют папкой right
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy, 100, 20, mouseX, mouseY);
@@ -68,42 +70,42 @@ class ConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            // КЛИКИ ЛЕВОЙ РУКИ
+            // Клики левой руки
             if (mx >= cxLeft && mx <= cxLeft + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
-                    MyConfig.leftY += 0.05f;
+                    LeftHandConfig.leftY += 0.05f;
                     return true;
                 }
                 else if (my >= cy - 35 && my <= cy - 15) {
-                    MyConfig.leftY -= 0.05f;
+                    LeftHandConfig.leftY -= 0.05f;
                     return true;
                 }
                 else if (my >= cy && my <= cy + 20) {
-                    MyConfig.leftZ -= 0.05f;
+                    LeftHandConfig.leftZ -= 0.05f;
                     return true;
                 }
                 else if (my >= cy + 25 && my <= cy + 45) {
-                    MyConfig.leftZ += 0.05f;
+                    LeftHandConfig.leftZ += 0.05f;
                     return true;
                 }
             }
             
-            // КЛИКИ ПРАВОЙ РУКИ
+            // Клики правой руки
             if (mx >= cxRight && mx <= cxRight + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
-                    MyConfig.rightY += 0.05f;
+                    RightHandConfig.rightY += 0.05f;
                     return true;
                 }
                 else if (my >= cy - 35 && my <= cy - 15) {
-                    MyConfig.rightY -= 0.05f;
+                    RightHandConfig.rightY -= 0.05f;
                     return true;
                 }
                 else if (my >= cy && my <= cy + 20) {
-                    MyConfig.rightZ -= 0.05f;
+                    RightHandConfig.rightZ -= 0.05f;
                     return true;
                 }
                 else if (my >= cy + 25 && my <= cy + 45) {
-                    MyConfig.rightZ += 0.05f;
+                    RightHandConfig.rightZ += 0.05f;
                     return true;
                 }
             }
