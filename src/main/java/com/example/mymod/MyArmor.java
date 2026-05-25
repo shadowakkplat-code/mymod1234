@@ -4,47 +4,53 @@ import java.lang.reflect.Method;
 import net.neoforged.bus.api.SubscribeEvent;
 
 public class MyArmor {
+    
+    // СОВЕРШЕННО ДРУГОЙ СПОСОБ: Отрисовка брони через стадию рендеринга мира (невозможно скрыть)
     @SubscribeEvent
-    public void onRenderGui(net.neoforged.neoforge.client.event.ScreenEvent.Render.Post event) {
+    public void onRenderStage(net.neoforged.neoforge.client.event.RenderStageEvent event) {
         try {
-            Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
-            Object mc = mcClass.getMethod("getInstance").invoke(null);
-            
-            // Рисуем ХУД только на чистом игровом экране (без открытых чатов и инвентарей)
-            if (mcClass.getField("screen").get(mc) != null) return;
-            Object player = mcClass.getField("player").get(mc);
-            
-            if (player != null) {
-                Object window = mcClass.getMethod("getWindow").invoke(mc);
-                int screenWidth = (int) window.getClass().getMethod("getGuiScaledWidth").invoke(window);
-                int screenHeight = (int) window.getClass().getMethod("getGuiScaledHeight").invoke(window);
-                Object graphics = event.getGuiGraphics();
+            // Рисуем в самой финальной стадии вывода кадра на монитор
+            if (event.getStage().toString().contains("AFTER_LEVEL")) {
+                Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
+                Object mc = mcClass.getMethod("getInstance").invoke(null);
                 
-                int left = screenWidth / 2 + 91;
-                int top = screenHeight - 49; // Ровно над полоской еды
+                if (mcClass.getField("screen").get(mc) != null) return;
+                Object player = mcClass.getField("player").get(mc);
                 
-                Class<?> esClass = Class.forName("net.minecraft.world.entity.EquipmentSlot");
-                Object[] slots = {
-                    esClass.getField("FEET").get(null), esClass.getField("LEGS").get(null),
-                    esClass.getField("CHEST").get(null), esClass.getField("HEAD").get(null)
-                };
-                
-                Class<?> isClass = Class.forName("net.minecraft.world.item.ItemStack");
-                int currentX = left - 9;
-
-                for (Object slot : slots) {
-                    Object armorStack = player.getClass().getMethod("getItemBySlot", esClass).invoke(player, slot);
-                    boolean isEmpty = (boolean) armorStack.getClass().getMethod("isEmpty").invoke(armorStack);
+                if (player != null) {
+                    Object window = mcClass.getMethod("getWindow").invoke(mc);
+                    int screenWidth = (int) window.getClass().getMethod("getGuiScaledWidth").invoke(window);
+                    int screenHeight = (int) window.getClass().getMethod("getGuiScaledHeight").invoke(window);
                     
-                    if (!isEmpty) {
-                        Object pose = graphics.getClass().getMethod("pose").invoke(graphics);
-                        pose.getClass().getMethod("pushPose").invoke(pose);
-                        pose.getClass().getMethod("translate", float.class, float.class, float.class).invoke(pose, (float)currentX, (float)top, 0.0f);
-                        pose.getClass().getMethod("scale", float.class, float.class, float.class).invoke(pose, 0.72f, 0.72f, 0.72f);
+                    // Получаем актуальный системный графический контекст
+                    Object graphics = mcClass.getField("gui").get(mc).getClass().getMethod("getGuiGraphics").invoke(mcClass.getField("gui").get(mc));
+                    
+                    int left = screenWidth / 2 + 91;
+                    int top = screenHeight - 49; // Точные координаты над полоской еды
+                    
+                    Class<?> esClass = Class.forName("net.minecraft.world.entity.EquipmentSlot");
+                    Object[] slots = {
+                        esClass.getField("FEET").get(null), esClass.getField("LEGS").get(null),
+                        esClass.getField("CHEST").get(null), esClass.getField("HEAD").get(null)
+                    };
+                    
+                    Class<?> isClass = Class.forName("net.minecraft.world.item.ItemStack");
+                    int currentX = left - 9;
+
+                    for (Object slot : slots) {
+                        Object armorStack = player.getClass().getMethod("getItemBySlot", esClass).invoke(player, slot);
+                        boolean isEmpty = (boolean) armorStack.getClass().getMethod("isEmpty").invoke(armorStack);
                         
-                        graphics.getClass().getMethod("renderItem", isClass, int.class, int.class).invoke(graphics, armorStack, 0, 0);
-                        pose.getClass().getMethod("popPose").invoke(pose);
-                        currentX -= 16;
+                        if (!isEmpty) {
+                            Object pose = graphics.getClass().getMethod("pose").invoke(graphics);
+                            pose.getClass().getMethod("pushPose").invoke(pose);
+                            pose.getClass().getMethod("translate", float.class, float.class, float.class).invoke(pose, (float)currentX, (float)top, 0.0f);
+                            pose.getClass().getMethod("scale", float.class, float.class, float.class).invoke(pose, 0.72f, 0.72f, 0.72f);
+                            
+                            graphics.getClass().getMethod("renderItem", isClass, int.class, int.class).invoke(graphics, armorStack, 0, 0);
+                            pose.getClass().getMethod("popPose").invoke(pose);
+                            currentX -= 16;
+                        }
                     }
                 }
             }
@@ -57,11 +63,20 @@ class ConfigScreen extends net.minecraft.client.gui.screens.Screen {
         super(net.minecraft.network.chat.Component.literal("Sword Config"));
     }
 
+    // Исправленный метод отрисовки кнопок со сбросом цвета шейдера
     private void drawCustomButton(net.minecraft.client.gui.GuiGraphics g, String text, int x, int y, int w, int h, int mx, int my) {
-        boolean hovered = mx >= x && mx <= x + w && my >= y && my <= y + h;
-        int color = hovered ? 0xCC555555 : 0xCC222222;
-        g.fill(x, y, x + w, y + h, color);
-        g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, 0xFFFFFFFF);
+        try {
+            boolean hovered = mx >= x && mx <= x + w && my >= y && my <= y + h;
+            int color = hovered ? 0xEE777777 : 0xEE444444; // Делаем кнопки светлыми и яркими
+            
+            // Включаем прозрачность и принудительно сбрасываем цвета рендеринга в шейдере
+            Class<?> rsClass = Class.forName("com.mojang.blaze3d.systems.RenderSystem");
+            rsClass.getMethod("enableBlend").invoke(null);
+            rsClass.getMethod("setShaderColor", float.class, float.class, float.class, float.class).invoke(null, 1.0f, 1.0f, 1.0f, 1.0f);
+            
+            g.fill(x, y, x + w, y + h, color);
+            g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, 0xFFFFFFFF);
+        } catch (Exception ignored) {}
     }
 
     @Override
@@ -88,12 +103,26 @@ class ConfigScreen extends net.minecraft.client.gui.screens.Screen {
             int cy = this.height / 2;
             
             if (mx >= cx && mx <= cx + 100) {
-                if (my >= cy - 60 && my <= cy - 40) MyMod.swordY += 0.05f;
-                else if (my >= cy - 35 && my <= cy - 15) MyMod.swordY -= 0.05f;
-                else if (my >= cy && my <= cy + 20) MyMod.swordZ -= 0.05f;
-                else if (my >= cy + 25 && my <= cy + 45) MyMod.swordZ += 0.05f;
-                else if (my >= cy + 65 && my <= cy + 85) this.minecraft.setScreen(null);
-                return true;
+                if (my >= cy - 60 && my <= cy - 40) {
+                    MyMod.swordY += 0.05f;
+                    return true;
+                }
+                else if (my >= cy - 35 && my <= cy - 15) {
+                    MyMod.swordY -= 0.05f;
+                    return true;
+                }
+                else if (my >= cy && my <= cy + 20) {
+                    MyMod.swordZ -= 0.05f;
+                    return true;
+                }
+                else if (my >= cy + 25 && my <= cy + 45) {
+                    MyMod.swordZ += 0.05f;
+                    return true;
+                }
+                else if (my >= cy + 65 && my <= cy + 85) {
+                    this.minecraft.setScreen(null);
+                    return true;
+                }
             }
         }
         return super.mouseClicked(mx, my, button);
