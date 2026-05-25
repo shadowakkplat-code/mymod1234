@@ -1,6 +1,8 @@
 package com.example.mymod;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
@@ -29,6 +31,12 @@ public class MyMod {
     public void onClientTickPost(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
+
+        // Намертво отключаем логику тряски рук в каждом тике игры
+        if (mc.player.hurtTime > 0) {
+            mc.player.hurtTime = 0;
+            mc.player.hurtDuration = 0;
+        }
 
         boolean isDown = mc.options.keyAttack.isDown();
         if (isDown && !wasClicking) {
@@ -75,8 +83,21 @@ public class MyMod {
         boolean isWeapon = itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe");
         
         if (isWeapon) {
-            RightHandRenderer.render(event, itemStack);
-            LeftHandRenderer.render(event, itemStack);
+            PoseStack poseStack = event.getPoseStack();
+            
+            // ПРАВАЯ РУКА (MAIN_HAND)
+            if (event.getHand() == InteractionHand.MAIN_HAND) {
+                // Изменяем саму матрицу события ДО рендеринга ванильного предмета
+                poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
+                poseStack.scale(0.55f, 0.55f, 0.55f);
+            } 
+            // ЛЕВАЯ РУКА (OFF_HAND)
+            else if (event.getHand() == InteractionHand.OFF_HAND) {
+                // Сдвигаем влево, чтобы компенсировать встроенное отзеркаливание
+                poseStack.translate(-0.45D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
+                // Уменьшаем модель ровно в 2 раза
+                poseStack.scale(0.275f, 0.275f, 0.275f);
+            }
         }
     }
 }
