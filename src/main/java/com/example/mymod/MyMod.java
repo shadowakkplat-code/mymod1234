@@ -2,26 +2,22 @@ package com.example.mymod;
 
 import java.lang.reflect.Method;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 
 @Mod("mymod")
 public class MyMod {
     private static boolean wasClicking = false;
+    private static boolean wasKeyPDown = false;
     
-    // Переменные положения меча
     public static float swordY = 0.10f;
     public static float swordZ = -0.45f;
 
-    public MyMod(ModContainer container, IEventBus modBus) {
+    public MyMod() {
+        // Регистрируем всё в одной стандартной стабильной шине
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
-        
-        // Регистрируем броню в правильных системных шинах NeoForge 1.21.4
         NeoForge.EVENT_BUS.register(new MyArmor());
-        modBus.register(new MyArmor());
     }
 
     @SubscribeEvent
@@ -33,6 +29,9 @@ public class MyMod {
             Object level = mcClass.getField("level").get(mc);
             
             if (player != null && level != null) {
+                int tickCount = player.getClass().getField("tickCount").getInt(player);
+                
+                // 1. ОТСЛЕЖИВАНИЕ PvP-УДАРА ДЛЯ САКУРЫ
                 Object options = mcClass.getField("options").get(mc);
                 Object keyAttack = options.getClass().getField("keyAttack").get(options);
                 boolean isDown = (boolean) keyAttack.getClass().getMethod("isDown").invoke(keyAttack);
@@ -66,6 +65,20 @@ public class MyMod {
                     }
                 }
                 wasClicking = isDown;
+
+                // 2. ХАК: ОТКРЫТИЕ МЕНЮ НАСТРОЕК МЕЧА НА АНГЛИЙСКУЮ КЛАВИШУ "P" ПРЯМО В МИРЕ!
+                long windowHandle = (long) mcClass.getMethod("getWindow").invoke(mc).getClass().getMethod("getWindow").invoke(mcClass.getMethod("getWindow").invoke(mc));
+                Class<?> glfwClass = Class.forName("org.lwjgl.glfw.GLFW");
+                Method getKeyMethod = glfwClass.getMethod("glfwGetKey", long.class, int.class);
+                
+                // 80 — это системный код клавиши P (GLFW_KEY_P)
+                int keyState = (int) getKeyMethod.invoke(null, windowHandle, 80); 
+                boolean isPDown = (keyState == 1);
+                
+                if (isPDown && !wasKeyPDown && mcClass.getField("screen").get(mc) == null) {
+                    mcClass.getMethod("setScreen", Class.forName("net.minecraft.client.gui.screens.Screen")).invoke(mc, new ConfigScreen());
+                }
+                wasKeyPDown = isPDown;
             }
         } catch (Exception ignored) {}
     }
@@ -82,54 +95,6 @@ public class MyMod {
                 com.mojang.blaze3d.vertex.PoseStack poseStack = event.getPoseStack();
                 poseStack.scale(0.55f, 0.55f, 0.55f);
                 poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
-            }
-        } catch (Exception ignored) {}
-    }
-
-    // Безопасный динамический поиск метода builder по его имени
-    @SubscribeEvent
-    public void onScreenInit(net.neoforged.neoforge.client.event.ScreenEvent.Init.Post event) {
-        try {
-            Object screen = event.getScreen();
-            String screenName = screen.getClass().getName();
-            
-            if (screenName.contains("PauseScreen") || screenName.contains("pause")) {
-                Class<?> componentClass = Class.forName("net.minecraft.network.chat.Component");
-                Object buttonText = componentClass.getMethod("literal", String.class).invoke(null, "⚔ PvP Mod Config");
-                
-                Class<?> buttonClass = Class.forName("net.minecraft.client.Gui.components.Button");
-                if (buttonClass == null) buttonClass = Class.forName("net.minecraft.client.gui.components.Button");
-                
-                // Ищем метод "builder" перебором, полностью обходя любые ошибки типов аргументов
-                Method builderMethod = null;
-                for (Method m : buttonClass.getMethods()) {
-                    if (m.getName().equals("builder")) {
-                        builderMethod = m;
-                        break;
-                    }
-                }
-                
-                if (builderMethod != null) {
-                    // Создаем клик-действие для открытия нашего ConfigScreen
-                    Object openAction = java.lang.reflect.Proxy.newProxyInstance(
-                        buttonClass.getClassLoader(),
-                        buttonClass.getDeclaredClasses(),
-                        (proxy, method, args) -> {
-                            if (method.getName().equals("onPress") || method.getName().contains("Press")) {
-                                Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
-                                Object mc = mcClass.getMethod("getInstance").invoke(null);
-                                mcClass.getMethod("setScreen", Class.forName("net.minecraft.client.gui.screens.Screen")).invoke(mc, new ConfigScreen());
-                            }
-                            return null;
-                        }
-                    );
-
-                    Object builder = builderMethod.invoke(null, buttonText, openAction);
-                    builder.getClass().getMethod("bounds", int.class, int.class, int.class, int.class).invoke(builder, 10, 10, 110, 20);
-                    Object pvpButton = builder.getClass().getMethod("build").invoke(builder);
-                    
-                    event.addListener((net.minecraft.client.gui.components.events.GuiEventListener) pvpButton);
-                }
             }
         } catch (Exception ignored) {}
     }
