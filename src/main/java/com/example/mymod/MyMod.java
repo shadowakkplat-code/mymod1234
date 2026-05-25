@@ -2,9 +2,12 @@ package com.example.mymod;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.util.FindMainArm;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -79,36 +82,55 @@ public class MyMod {
     @SubscribeEvent
     public void onRenderHand(RenderHandEvent event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return;
+        if (mc.player == null || mc.level == null) return;
         
         ItemStack itemStack = event.getItemStack();
         if (itemStack.isEmpty()) return;
 
         PoseStack poseStack = event.getPoseStack();
+        InteractionHand hand = event.getHand();
         
-        // Определяем физическую сторону руки игрока (Левая/Правая)
+        // Вычисляем физическую сторону руки (левая или правая)
         HumanoidArm mainArm = mc.player.getMainArm();
-        HumanoidArm currentArm = (event.getHand() == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
+        HumanoidArm currentArm = (hand == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
         
-        // ИСПРАВЛЕНО: Каждый блок теперь открывает pushPose() и ОБЯЗАТЕЛЬНО закрывает popPose() в конце.
-        // Это полностью уничтожает баг, когда правые координаты "наследовались" левой рукой.
+        // 1. ОТМЕНЯЕМ стандартный ванильный рендер предмета, чтобы взять управление на себя
+        event.setCanceled(true);
+        
+        // 2. ОТКРЫВАЕМ изолированный стек матриц
+        poseStack.pushPose();
+        
         if (currentArm == HumanoidArm.RIGHT) {
-            poseStack.pushPose(); // Изолируем матрицу правой руки
-            
-            // Правая рука (Клавиша K): Применяем масштаб и сдвиги
+            // ПРАВАЯ СТОРОНА: Сдвигаем по 3 осям из правого конфига и ставим масштаб 0.55f
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
-            
-            poseStack.popPose(); // Сбрасываем изменения матрицы, чтобы они не улетели на левую руку
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            poseStack.pushPose(); // Изолируем матрицу левой руки
-            
-            // Левая рука (Клавиша J): Применяем масштаб и сдвиги
+            // ЛЕВАЯ СТОРОНА: Сдвигаем по 3 осям из левого конфига и уменьшаем в два раза
             poseStack.translate((double)LeftHandConfig.leftX, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
-            poseStack.scale(0.275f, 0.275f, 0.275f); // Уменьшена ровно в 2 раза
-            
-            poseStack.popPose(); // Сбрасываем изменения матрицы
+            poseStack.scale(0.275f, 0.275f, 0.275f);
         }
+
+        // 3. ВРУЧНУЮ вызываем отрисовку модели предмета с НАШИМИ новыми координатами и масштабом
+        ItemInHandRenderer itemRenderer = mc.getEntityRenderDispatcher().getItemInHandRenderer();
+        MultiBufferSource bufferSource = event.getMultiBufferSource();
+        int packedLight = event.getPackedLight();
+        float partialTick = event.getPartialTick();
+        float interpolatedPitch = event.getInterpolatedPitch();
+        float swingProgress = event.getSwingProgress();
+        float equipProgress = event.getEquipProgress();
+
+        itemRenderer.renderItem(
+            mc.player, 
+            itemStack, 
+            currentArm == HumanoidArm.RIGHT ? net.minecraft.client.renderer.block.model.ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND : net.minecraft.client.renderer.block.model.ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND,
+            currentArm == HumanoidArm.LEFT,
+            poseStack,
+            bufferSource,
+            packedLight
+        );
+        
+        // 4. БЕЗОПАСНО ЗАКРЫВАЕМ стек. Теперь координаты применились к модели и не просочатся на другую руку!
+        poseStack.popPose();
     }
 }
