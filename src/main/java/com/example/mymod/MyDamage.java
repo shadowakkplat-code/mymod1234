@@ -11,10 +11,18 @@ public class MyDamage {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
-        // Если у игрока активна анимация получения урона (hurtTime > 0)
+        // Если игрок получает урон, принудительно убираем наклон камеры (Roll)
         if (mc.player.hurtTime > 0) {
-            // Принудительно обнуляем угол наклона (Roll), полностью отключая тряску экрана
             event.setRoll(0.0f);
+        }
+    }
+
+    @SubscribeEvent
+    public void onScreenShake(net.neoforged.neoforge.client.event.ViewportEvent.RenderHandEvent event) {
+        Minecraft mc = Minecraft.getInstance();
+        // Дополнительное гашение тряски рук при ударе
+        if (mc.player != null && mc.player.hurtTime > 0) {
+             event.setCanceled(true); 
         }
     }
 }
