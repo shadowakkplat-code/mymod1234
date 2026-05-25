@@ -1,8 +1,8 @@
 package com.example.mymod;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.example.mymod.left.LeftHandRenderer;
+import com.example.mymod.right.RightHandRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
@@ -27,17 +27,10 @@ public class MyMod {
         NeoForge.EVENT_BUS.register(new MyDamage()); 
     }
 
-    // ИСПРАВЛЕНО под NeoForge 1.21.4: Слушаем конкретное событие Post (конец тика)
     @SubscribeEvent
     public void onClientTickPost(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
-
-        // Жесткое гашение тиков урона для отключения тряски рук/предметов без мерцания
-        if (mc.player.hurtTime > 0) {
-            mc.player.hurtDuration = 0;
-            mc.player.hurtTime = 0;
-        }
 
         boolean isDown = mc.options.keyAttack.isDown();
         if (isDown && !wasClicking) {
@@ -84,19 +77,9 @@ public class MyMod {
         boolean isWeapon = itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe");
         
         if (isWeapon) {
-            PoseStack poseStack = event.getPoseStack();
-            
-            if (event.getHand() == InteractionHand.MAIN_HAND) {
-                // ПРАВАЯ РУКА
-                poseStack.translate(0.12D, (double)MyConfig.rightY, (double)MyConfig.rightZ); 
-                poseStack.scale(0.55f, 0.55f, 0.55f);
-            } 
-            else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // ЛЕВАЯ РУКА: Полная изоляция и уменьшение в два раза
-                poseStack.translate(-0.45D, 0.0D, 0.0D); // Жесткий сдвиг влево
-                poseStack.translate(0.0D, (double)MyConfig.leftY, (double)MyConfig.leftZ); 
-                poseStack.scale(0.275f, 0.275f, 0.275f); // Масштабирование
-            }
+            // Передаем обработку рендеринга в новые изолированные подпакеты
+            RightHandRenderer.render(event, itemStack);
+            LeftHandRenderer.render(event, itemStack);
         }
     }
 }
