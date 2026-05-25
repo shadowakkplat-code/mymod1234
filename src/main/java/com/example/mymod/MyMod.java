@@ -2,6 +2,7 @@ package com.example.mymod;
 
 import java.lang.reflect.Method;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.bus.api.Event;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -26,7 +27,6 @@ public class MyMod {
             if (player != null && level != null) {
                 int tickCount = player.getClass().getField("tickCount").getInt(player);
                 
-                // 1. ОБРАБОТКА СЫТОСТИ
                 if (tickCount % 20 == 0) {
                     Object foodData = player.getClass().getMethod("getFoodData").invoke(player);
                     int currentFood = (int) foodData.getClass().getMethod("getFoodLevel").invoke(foodData);
@@ -36,7 +36,6 @@ public class MyMod {
                     else localSaturation = 0.0f;
                 }
 
-                // 2. ОТСЛЕЖИВАНИЕ НАЖАТИЯ МЫШКИ ДЛЯ САКУРЫ
                 Object options = mcClass.getField("options").get(mc);
                 Object keyAttack = options.getClass().getField("keyAttack").get(options);
                 boolean isDown = (boolean) keyAttack.getClass().getMethod("isDown").invoke(keyAttack);
@@ -55,8 +54,17 @@ public class MyMod {
                         
                         Method addP = level.getClass().getMethod("addParticle", Class.forName("net.minecraft.core.particles.ParticleOptions"), double.class, double.class, double.class, double.class, double.class, double.class);
                         java.util.Random r = new java.util.Random();
+                        
                         for (int i = 0; i < 15; i++) {
-                            addP.invoke(level, cherry, x, y + (height / 2.0), z, (r.nextDouble()-0.5)*0.2, r.nextDouble()*0.2, (r.nextDouble()-0.5)*0.2);
+                            double offsetX = (r.nextDouble() - 0.5) * 1.0;
+                            double offsetZ = (r.nextDouble() - 0.5) * 1.0;
+                            double offsetY = r.nextDouble() * height;
+                            
+                            double speedX = (r.nextDouble() - 0.5) * 0.25;
+                            double speedY = r.nextDouble() * 0.15;
+                            double speedZ = (r.nextDouble() - 0.5) * 0.25;
+                            
+                            addP.invoke(level, cherry, x + offsetX, y + offsetY, z + offsetZ, speedX, speedY, speedZ);
                         }
                     }
                 }
@@ -65,29 +73,32 @@ public class MyMod {
         } catch (Exception ignored) {}
     }
 
-    // 3. ОТРИСОВКА ИНТЕРФЕЙСА БРОНИ И СЫТОСТИ НАД ХОТБАРОМ
     @SubscribeEvent
-    public void onRenderGui(net.neoforged.neoforge.client.event.RenderGuiOverlayEvent.Post event) {
+    public void onRenderGui(Event event) {
+        if (!event.getClass().getName().contains("RenderGuiOverlayEvent")) return;
+        if (!event.getClass().getName().contains("Post")) return;
         try {
-            Object overlay = event.getOverlay();
+            Method getOverlayMethod = event.getClass().getMethod("getOverlay");
+            Object overlay = getOverlayMethod.invoke(event);
             String overlayId = overlay.getClass().getMethod("id").invoke(overlay).toString();
             
-            // Ловим момент отрисовки полоски голода
             if (overlayId.contains("food_level") || overlayId.contains("FOOD_LEVEL")) {
                 Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
                 Object mc = mcClass.getMethod("getInstance").invoke(null);
                 Object player = mcClass.getField("player").get(mc);
                 
                 if (player != null) {
-                    Object window = event.getWindow();
+                    Method getWindowMethod = event.getClass().getMethod("getWindow");
+                    Object window = getWindowMethod.invoke(event);
                     int screenWidth = (int) window.getClass().getMethod("getGuiScaledWidth").invoke(window);
                     int screenHeight = (int) window.getClass().getMethod("getGuiScaledHeight").invoke(window);
-                    Object graphics = event.getGuiGraphics();
+                    
+                    Method getGuiGraphicsMethod = event.getClass().getMethod("getGuiGraphics");
+                    Object graphics = getGuiGraphicsMethod.invoke(event);
                     
                     int left = screenWidth / 2 + 91;
                     int top = screenHeight - 39;
                     
-                    // Рисуем золотые блики сытости поверх окорочков
                     Class<?> rlClass = Class.forName("net.minecraft.resources.ResourceLocation");
                     Object icons = rlClass.getMethod("withDefaultNamespace", String.class).invoke(null, "textures/gui/icons.png");
                     
@@ -103,7 +114,6 @@ public class MyMod {
                         }
                     }
 
-                    // Выводим прочность и иконки надетой брони
                     int armorTop = top - 12;
                     int currentX = left - 9;
                     Class<?> esClass = Class.forName("net.minecraft.world.entity.EquipmentSlot");
@@ -141,7 +151,10 @@ public class MyMod {
                                 pose.getClass().getMethod("scale", float.class, float.class, float.class).invoke(pose, 0.6f, 0.6f, 0.6f);
                                 
                                 int color = 0xFFFFFFFF;
-                                if ((float) currentDurability / maxDmg < 0.25f) color = 0xFFFF5555;
+                                float durRatio = (float) currentDurability / maxDmg;
+                                if (durRatio < 0.25f) {
+                                    color = 0xFFFF5555;
+                                }
                                 
                                 graphics.getClass().getMethod("drawString", font.getClass(), String.class, float.class, float.class, int.class, boolean.class)
                                         .invoke(graphics, font, String.valueOf(currentDurability), 0.0f, 2.0f, color, true);
