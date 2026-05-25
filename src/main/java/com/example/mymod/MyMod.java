@@ -61,7 +61,7 @@ public class MyMod {
         } catch (Exception ignored) {}
     }
 
-    // Делаем предметы маленькими и опускаем их на 50% ниже
+    // Идеальное PvP положение меча: выше на 10% и вперед на 45%
     @SubscribeEvent
     public void onRenderHand(net.neoforged.neoforge.client.event.RenderHandEvent event) {
         try {
@@ -72,9 +72,10 @@ public class MyMod {
                 itemName.contains("Sword") || itemName.contains("Axe") || itemName.contains("Pickaxe")) {
                 
                 com.mojang.blaze3d.vertex.PoseStack poseStack = event.getPoseStack();
-                poseStack.scale(0.55f, 0.55f, 0.55f); // Компактный PvP масштаб
-                // В значении Y выставляем -0.45D, что опускает модельку ровно наполовину ниже
-                poseStack.translate(0.12D, -0.45D, 0.0D); 
+                poseStack.scale(0.55f, 0.55f, 0.55f); // Сохраняем аккуратный маленький размер
+                
+                // Сдвигаем по оси Y вверх (на +0.10) и по оси Z вперед (на -0.45)
+                poseStack.translate(0.12D, 0.10D, -0.45D); 
             }
         } catch (Exception ignored) {}
     }
