@@ -2,7 +2,7 @@ package com.example.mymod;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
@@ -61,14 +61,14 @@ public class MyMod {
 
         long windowHandle = mc.getWindow().getWindow();
         
-        // ОБРАБОТКА КЛАВИШИ К (Только для меню правой руки)
+        // КЛАВИША К: Меню настроек для ПРАВОЙ стороны
         boolean isKDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_K) == GLFW.GLFW_PRESS;
         if (isKDown && !wasKeyKDown && mc.screen == null) {
             mc.setScreen(new RightConfigScreen()); 
         }
         wasKeyKDown = isKDown;
 
-        // ОБРАБОТКА КЛАВИШИ J (Только для меню левой руки)
+        // КЛАВИША J: Меню настроек для ЛЕВОЙ стороны
         boolean isJDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_J) == GLFW.GLFW_PRESS;
         if (isJDown && !wasKeyJDown && mc.screen == null) {
             mc.setScreen(new LeftConfigScreen()); 
@@ -81,17 +81,17 @@ public class MyMod {
         ItemStack itemStack = event.getItemStack();
         if (itemStack.isEmpty()) return;
 
-        // ИСПРАВЛЕНО: Убрали проверку имени предмета (itemName.contains).
-        // Теперь настройки применяются вообще ко всем вещам в руках игрока.
         PoseStack poseStack = event.getPoseStack();
         
-        // ПРАВАЯ РУКА (MAIN_HAND) — Обычный размер 0.55f, слушает только кнопки из меню K
-        if (event.getHand() == InteractionHand.MAIN_HAND) {
+        // Проверяем, с какой стороны (RIGHT или LEFT) рендерится предмет в данный момент кадра
+        // Это гарантирует, что настройки K применятся ТОЛЬКО к правому предмету, а J — к левому
+        if (event.getHandSide() == HumanoidArm.RIGHT) {
+            // ПРАВАЯ СТОРОНА: Слушает только RightHandConfig (клавиша K), размер 0.55f
             poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
         } 
-        // ЛЕВАЯ РУКА (OFF_HAND) — Уменьшена ровно в 2 раза (0.275f), слушает только кнопки из меню J
-        else if (event.getHand() == InteractionHand.OFF_HAND) {
+        else if (event.getHandSide() == HumanoidArm.LEFT) {
+            // ЛЕВАЯ СТОРОНА: Слушает только LeftHandConfig (клавиша J), уменьшена ровно в 2 раза
             poseStack.translate(-0.315D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
             poseStack.scale(0.275f, 0.275f, 0.275f);
         }
