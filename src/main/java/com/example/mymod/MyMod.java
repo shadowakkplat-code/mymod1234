@@ -1,7 +1,5 @@
 package com.example.mymod;
 
-import com.example.mymod.left.LeftHandConfig;
-import com.example.mymod.right.RightHandConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
@@ -79,18 +77,21 @@ public class MyMod {
 
         String itemName = itemStack.getItem().toString().toLowerCase();
         
+        // Применяем настройки ко ВСЕМ мечам, топорам и киркам
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
             
+            // 100% Точное разделение по типу руки, которая рендерится в данный момент события
             if (event.getHand() == InteractionHand.MAIN_HAND) {
-                // ПРАВАЯ РУКА: Берет данные из com.example.mymod.right
+                // ПРАВАЯ РУКА
                 poseStack.scale(0.55f, 0.55f, 0.55f);
-                poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ); 
+                poseStack.translate(0.12D, (double)MyConfig.rightY, (double)MyConfig.rightZ); 
             } 
             else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // ЛЕВАЯ РУКА: Берет данные из com.example.mymod.left
+                // ЛЕВАЯ РУКА
                 poseStack.scale(0.275f, 0.275f, 0.275f);
-                poseStack.translate(-0.24D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ); 
+                // Множитель -0.24D нужен для компенсации зеркальности левой руки в Minecraft
+                poseStack.translate(-0.24D, (double)MyConfig.leftY, (double)MyConfig.leftZ); 
             }
         }
     }
