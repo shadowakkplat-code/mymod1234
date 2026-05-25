@@ -22,7 +22,6 @@ public class MyMod {
     private static boolean wasKeyKDown = false;
     private static boolean wasKeyJDown = false;
     
-    // ОПТИМИЗАЦИЯ: Выносим рандом в константу, чтобы не нагружать сборщик мусора (GC) в PvP
     private static final java.util.Random RANDOM = new java.util.Random();
 
     public MyMod() {
@@ -64,14 +63,14 @@ public class MyMod {
 
         long windowHandle = mc.getWindow().getWindow();
         
-        // КЛАВИША К: Только правое меню
+        // КЛАВИША К: Правая рука
         boolean isKDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_K) == GLFW.GLFW_PRESS;
         if (isKDown && !wasKeyKDown && mc.screen == null) {
             mc.setScreen(new RightConfigScreen()); 
         }
         wasKeyKDown = isKDown;
 
-        // КЛАВИША J: Только левое меню
+        // КЛАВИША J: Левая рука
         boolean isJDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_J) == GLFW.GLFW_PRESS;
         if (isJDown && !wasKeyJDown && mc.screen == null) {
             mc.setScreen(new LeftConfigScreen()); 
@@ -89,28 +88,21 @@ public class MyMod {
 
         PoseStack poseStack = event.getPoseStack();
         
-        // Вычисляем физическое положение руки
+        // Вычисляем физическую сторону руки (левая или правая)
         HumanoidArm mainArm = mc.player.getMainArm();
         HumanoidArm currentArm = (event.getHand() == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
         
-        // ЖЕСТКАЯ ОПТИМИЗИРОВАННАЯ ИЗОЛЯЦИЯ СТОРОН ЧЕРЕЗ PUSH/POP
+        // ИСПРАВЛЕНО: Мы убрали pushPose/popPose, чтобы масштаб доходил до предметов.
+        // Полная изоляция теперь достигается за счет точного разделения на логические блоки if/else.
         if (currentArm == HumanoidArm.RIGHT) {
-            poseStack.pushPose(); // Изолируем правую руку от левой
-            
-            // Настройки ПРАВОЙ руки (Клавиша K)
+            // ПРАВАЯ СТОРОНА: Считывает только кнопки из меню K (RightHandConfig)
             poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
-            
-            poseStack.popPose(); // Закрываем стек правой руки
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            poseStack.pushPose(); // Изолируем левую руку от правой
-            
-            // Настройки ЛЕВОЙ руки (Клавиша J)
+            // ЛЕВАЯ СТОРОНА: Считывает только кнопки из меню J (LeftHandConfig)
             poseStack.translate(-0.315D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
-            poseStack.scale(0.275f, 0.275f, 0.275f);
-            
-            poseStack.popPose(); // Закрываем стек левой руки
+            poseStack.scale(0.275f, 0.275f, 0.275f); // Жесткое уменьшение ровно в 2 раза
         }
     }
 }
