@@ -1,12 +1,14 @@
 package com.example.mymod;
 
+import com.example.mymod.left.LeftHandConfig;
+import com.example.mymod.right.RightHandConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class MyArmor {
-    // Данный класс используется как контейнер для ConfigScreen. Отрисовка HUD вынесена в MyHud.java
+    // Контейнер для ConfigScreen.
 }
 
 class ConfigScreen extends Screen {
@@ -35,30 +37,27 @@ class ConfigScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         
-        // Подсказка выхода в самом низу меню
         graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 105, 0xAAAAAA);
         
         int cy = this.height / 2;
         int cxLeft = this.width / 2 - 120;  
         int cxRight = this.width / 2 + 20;  
         
-        // Красивые цветные заголовки половин меню
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА  ]", cxLeft + 50, cy - 80, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 80, 0xFF5555);
 
-        // 1 ПОЛОВИНА: Кнопки ЛЕВОЙ РУКИ
+        // Кнопки ЛЕВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (Л)", cxLeft, cy + 25, 100, 20, mouseX, mouseY);
         
-        // 2 ПОЛОВИНА: Кнопки ПРАВОЙ РУКИ
+        // Кнопки ПРАВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (П)", cxRight, cy + 25, 100, 20, mouseX, mouseY);
         
-        // Общая кнопка закрытия по центру снизу
         drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 65, 100, 20, mouseX, mouseY);
         
         super.render(graphics, mouseX, mouseY, partialTick);
@@ -71,47 +70,46 @@ class ConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            // ОБРАБОТКА КЛИКОВ НА ЛЕВОЙ ПОЛОВИНЕ (Изменяют глобальные leftY и leftZ)
+            // Клики ЛЕВОЙ РУКИ (Изменяют LeftHandConfig)
             if (mx >= cxLeft && mx <= cxLeft + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
-                    MyMod.leftY += 0.05f;
+                    LeftHandConfig.leftY += 0.05f;
                     return true;
                 }
                 else if (my >= cy - 35 && my <= cy - 15) {
-                    MyMod.leftY -= 0.05f;
+                    LeftHandConfig.leftY -= 0.05f;
                     return true;
                 }
                 else if (my >= cy && my <= cy + 20) {
-                    MyMod.leftZ -= 0.05f;
+                    LeftHandConfig.leftZ -= 0.05f;
                     return true;
                 }
                 else if (my >= cy + 25 && my <= cy + 45) {
-                    MyMod.leftZ += 0.05f;
+                    LeftHandConfig.leftZ += 0.05f;
                     return true;
                 }
             }
             
-            // ОБРАБОТКА КЛИКОВ НА ПРАВОЙ ПОЛОВИНЕ (Изменяют глобальные swordY и swordZ)
+            // Клики ПРАВОЙ РУКИ (Изменяют RightHandConfig)
             if (mx >= cxRight && mx <= cxRight + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
-                    MyMod.swordY += 0.05f;
+                    RightHandConfig.rightY += 0.05f;
                     return true;
                 }
                 else if (my >= cy - 35 && my <= cy - 15) {
-                    MyMod.swordY -= 0.05f;
+                    RightHandConfig.rightY -= 0.05f;
                     return true;
                 }
                 else if (my >= cy && my <= cy + 20) {
-                    MyMod.swordZ -= 0.05f;
+                    RightHandConfig.rightZ -= 0.05f;
                     return true;
                 }
                 else if (my >= cy + 25 && my <= cy + 45) {
-                    MyMod.swordZ += 0.05f;
+                    RightHandConfig.rightZ += 0.05f;
                     return true;
                 }
             }
             
-            // ОБРАБОТКА КНОПКИ ЗАКРЫТЬ
             int closeX = this.width / 2 - 50;
             if (mx >= closeX && mx <= closeX + 100 && my >= cy + 65 && my <= cy + 85) {
                 if (this.minecraft != null) {
