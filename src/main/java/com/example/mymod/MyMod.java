@@ -1,14 +1,12 @@
 package com.example.mymod;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ItemInHandRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemDisplayContext; // ИСПРАВЛЕНО: Новый класс контекста отображения 1.21.4
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.core.particles.ParticleTypes;
@@ -90,47 +88,49 @@ public class MyMod {
         PoseStack poseStack = event.getPoseStack();
         InteractionHand hand = event.getHand();
         
-        // Вычисляем физическую сторону руки (левая или правая)
         HumanoidArm mainArm = mc.player.getMainArm();
         HumanoidArm currentArm = (hand == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
         
-        // 1. ОТМЕНЯЕМ стандартный ванильный рендер предмета, чтобы взять управление на себя
-        event.setCanceled(true);
-        
-        // 2. ОТКРЫВАЕМ изолированный стек матриц
-        poseStack.pushPose();
-        
+        float swingProgress = event.getSwingProgress();
+
         if (currentArm == HumanoidArm.RIGHT) {
-            // ПРАВАЯ СТОРОНА: Сдвигаем по 3 осям из правого конфига и ставим масштаб 0.55f
+            // ПРАВАЯ РУКА: Не отменяем ивент! Это возвращает ванильную анимацию еды/зелий
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
+
+            // ЕСЛИ ИГРОК БЬЕТ (swingProgress > 0), НАКЛАДЫВАЕМ КАСТOМНЫЕ PvP АНИМАЦИИ
+            if (swingProgress > 0.0f) {
+                float f = Math.isFinite(swingProgress) ? (float) Math.sin((double) (swingProgress * (float) Math.PI)) : 0.0f;
+                
+                switch (RightHandConfig.swingMode) {
+                    case 1: // Прокрут (360 градусов вокруг оси)
+                        poseStack.rotateAround(Axis.ZP.rotationDegrees(swingProgress * 360.0f), 0.0f, 0.0f, 0.0f);
+                        break;
+                    case 2: // Олдскул 1.7 (Резкий рубящий блок-хит)
+                        poseStack.translate(0.0D, (double)(f * 0.15F), 0.0D);
+                        poseStack.rotateAround(Axis.XP.rotationDegrees(-f * 30.0F), 1.0f, 0.0f, 0.0f);
+                        break;
+                    case 3: // Короткий PvP-удар (Хит без провала меча под экран)
+                        poseStack.translate(0.0D, 0.0D, (double)(f * 0.1F));
+                        break;
+                    case 4: // Боковой взмах
+                        poseStack.rotateAround(Axis.YP.rotationDegrees(f * 40.0F), 0.0f, 1.0f, 0.0f);
+                        break;
+                    case 5: // Снизу вверх
+                        poseStack.translate(0.0D, (double)(f * 0.2F), 0.0D);
+                        poseStack.rotateAround(Axis.XP.rotationDegrees(f * 20.0F), 1.0f, 0.0f, 0.0f);
+                        break;
+                    case 6: // Тяжелый замах (Замедленный визуальный удар)
+                        poseStack.rotateAround(Axis.ZP.rotationDegrees(-f * 45.0F), 0.0f, 0.0f, 1.0f);
+                        poseStack.rotateAround(Axis.XP.rotationDegrees(-f * 15.0F), 1.0f, 0.0f, 0.0f);
+                        break;
+                }
+            }
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            // ЛЕВАЯ СТОРОНА: Сдвигаем по 3 осям из левого конфига и уменьшаем в два раза
+            // ЛЕВАЯ РУКА: Оставляем простую дефолтную изоляцию и уменьшение, чтобы не забивать экран
             poseStack.translate((double)LeftHandConfig.leftX, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
             poseStack.scale(0.275f, 0.275f, 0.275f);
         }
-
-        // 3. ВРУЧНУЮ вызываем отрисовку модели предмета с НАШИМИ новыми координатами и масштабом
-        ItemInHandRenderer itemRenderer = mc.getEntityRenderDispatcher().getItemInHandRenderer();
-        MultiBufferSource bufferSource = event.getMultiBufferSource();
-        int packedLight = event.getPackedLight();
-
-        // ИСПРАВЛЕНО ПОД 1.21.4: Используем новый ItemDisplayContext для отображения в первом лице
-        ItemDisplayContext displayContext = (currentArm == HumanoidArm.RIGHT) ? 
-            ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND;
-
-        itemRenderer.renderItem(
-            mc.player, 
-            itemStack, 
-            displayContext,
-            currentArm == HumanoidArm.LEFT,
-            poseStack,
-            bufferSource,
-            packedLight
-        );
-        
-        // 4. БЕЗОПАСНО ЗАКРЫВАЕМ стек. Теперь координаты применились к модели и не просочатся на другую руку!
-        poseStack.popPose();
     }
 }
