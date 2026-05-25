@@ -9,10 +9,10 @@ public class MyArmor {
     // Контейнер класса
 }
 
-class ConfigScreen extends Screen {
-
-    protected ConfigScreen() {
-        super(Component.literal("Настройка рук"));
+// ЭКРАН ТОЛЬКО ДЛЯ ПРАВОЙ РУКИ (Клавиша K)
+class RightConfigScreen extends Screen {
+    protected RightConfigScreen() {
+        super(Component.literal("Настройка правой руки"));
     }
 
     @Override
@@ -23,10 +23,8 @@ class ConfigScreen extends Screen {
     private void drawCustomButton(GuiGraphics g, String text, int x, int y, int w, int h, int mx, int my) {
         boolean hovered = mx >= x && mx <= x + w && my >= y && my <= y + h;
         int color = hovered ? 0xEE777777 : 0xEE444444; 
-        
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        
         g.fill(x, y, x + w, y + h, color);
         g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, 0xFFFFFFFF);
     }
@@ -34,30 +32,19 @@ class ConfigScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
-        
         graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 105, 0xAAAAAA);
         
         int cy = this.height / 2;
-        int cxLeft = this.width / 2 - 120;  
-        int cxRight = this.width / 2 + 20;  
+        int cx = this.width / 2 - 50;  
         
-        graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА  ]", cxLeft + 50, cy - 80, 0x55FF55);
-        graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 80, 0xFF5555);
+        graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", this.width / 2, cy - 80, 0xFF5555);
 
-        // Кнопки ЛЕВОЙ РУКИ
-        drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 60, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 35, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "<- Ближе (Л)", cxLeft, cy + 25, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "^ Выше (П)", cx, cy - 60, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "v Ниже (П)", cx, cy - 35, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "-> Дальше (П)", cx, cy, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "<- Ближе (П)", cx, cy + 25, 100, 20, mouseX, mouseY);
         
-        // Кнопки ПРАВОЙ РУКИ
-        drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 60, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 35, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "<- Ближе (П)", cxRight, cy + 25, 100, 20, mouseX, mouseY);
-        
-        drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 65, 100, 20, mouseX, mouseY);
-        
+        drawCustomButton(graphics, "[x] Закрыть", cx, cy + 65, 100, 20, mouseX, mouseY);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -65,56 +52,77 @@ class ConfigScreen extends Screen {
     public boolean mouseClicked(double mx, double my, int button) {
         if (button == 0) {
             int cy = this.height / 2;
-            int cxLeft = this.width / 2 - 120;
-            int cxRight = this.width / 2 + 20;
+            int cx = this.width / 2 - 50;
             
-            // ИЗОЛИРОВАННАЯ ОБРАБОТКА КЛИКОВ ЛЕВОЙ РУКИ (Строго левая сторона экрана)
-            if (mx >= cxLeft && mx < cxLeft + 100) {
-                if (my >= cy - 60 && my < cy - 40) {
-                    LeftHandConfig.leftY += 0.05f;
-                    return true;
-                }
-                if (my >= cy - 35 && my < cy - 15) {
-                    LeftHandConfig.leftY -= 0.05f;
-                    return true;
-                }
-                if (my >= cy && my < cy + 20) {
-                    LeftHandConfig.leftZ -= 0.05f;
-                    return true;
-                }
-                if (my >= cy + 25 && my < cy + 45) {
-                    LeftHandConfig.leftZ += 0.05f;
+            if (mx >= cx && mx < cx + 100) {
+                if (my >= cy - 60 && my < cy - 40) { RightHandConfig.rightY += 0.05f; return true; }
+                if (my >= cy - 35 && my < cy - 15) { RightHandConfig.rightY -= 0.05f; return true; }
+                if (my >= cy && my < cy + 20) { RightHandConfig.rightZ -= 0.05f; return true; }
+                if (my >= cy + 25 && my < cy + 45) { RightHandConfig.rightZ += 0.05f; return true; }
+                if (my >= cy + 65 && my < cy + 85) {
+                    if (this.minecraft != null) this.minecraft.setScreen(null);
                     return true;
                 }
             }
+        }
+        return super.mouseClicked(mx, my, button);
+    }
+}
+
+// ЭКРАН ТОЛЬКО ДЛЯ ЛЕВОЙ РУКИ (Клавиша J)
+class LeftConfigScreen extends Screen {
+    protected LeftConfigScreen() {
+        super(Component.literal("Настройка левой руки"));
+    }
+
+    @Override
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        this.renderTransparentBackground(graphics);
+    }
+
+    private void drawCustomButton(GuiGraphics g, String text, int x, int y, int w, int h, int mx, int my) {
+        boolean hovered = mx >= x && mx <= x + w && my >= y && my <= y + h;
+        int color = hovered ? 0xEE777777 : 0xEE444444; 
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        g.fill(x, y, x + w, y + h, color);
+        g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, 0xFFFFFFFF);
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(graphics, mouseX, mouseY, partialTick);
+        graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 105, 0xAAAAAA);
+        
+        int cy = this.height / 2;
+        int cx = this.width / 2 - 50;  
+        
+        graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", this.width / 2, cy - 80, 0x55FF55);
+
+        drawCustomButton(graphics, "^ Выше (Л)", cx, cy - 60, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "v Ниже (Л)", cx, cy - 35, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "-> Дальше (Л)", cx, cy, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "<- Ближе (Л)", cx, cy + 25, 100, 20, mouseX, mouseY);
+        
+        drawCustomButton(graphics, "[x] Закрыть", cx, cy + 65, 100, 20, mouseX, mouseY);
+        super.render(graphics, mouseX, mouseY, partialTick);
+    }
+
+    @Override
+    public boolean mouseClicked(double mx, double my, int button) {
+        if (button == 0) {
+            int cy = this.height / 2;
+            int cx = this.width / 2 - 50;
             
-            // ИЗОЛИРОВАННАЯ ОБРАБОТКА КЛИКОВ ПРАВОЙ РУКИ (Строго правая сторона экрана)
-            if (mx >= cxRight && mx < cxRight + 100) {
-                if (my >= cy - 60 && my < cy - 40) {
-                    RightHandConfig.rightY += 0.05f;
+            if (mx >= cx && mx < cx + 100) {
+                if (my >= cy - 60 && my < cy - 40) { LeftHandConfig.leftY += 0.05f; return true; }
+                if (my >= cy - 35 && my < cy - 15) { LeftHandConfig.leftY -= 0.05f; return true; }
+                if (my >= cy && my < cy + 20) { LeftHandConfig.leftZ -= 0.05f; return true; }
+                if (my >= cy + 25 && my < cy + 45) { LeftHandConfig.leftZ += 0.05f; return true; }
+                if (my >= cy + 65 && my < cy + 85) {
+                    if (this.minecraft != null) this.minecraft.setScreen(null);
                     return true;
                 }
-                if (my >= cy - 35 && my < cy - 15) {
-                    RightHandConfig.rightY -= 0.05f;
-                    return true;
-                }
-                if (my >= cy && my < cy + 20) {
-                    RightHandConfig.rightZ -= 0.05f;
-                    return true;
-                }
-                if (my >= cy + 25 && my < cy + 45) {
-                    RightHandConfig.rightZ += 0.05f;
-                    return true;
-                }
-            }
-            
-            // ОБРАБОТКА КНОПКИ ЗАКРЫТЬ
-            int closeX = this.width / 2 - 50;
-            if (mx >= closeX && mx < closeX + 100 && my >= cy + 65 && my < cy + 85) {
-                if (this.minecraft != null) {
-                    this.minecraft.setScreen(null);
-                }
-                return true;
             }
         }
         return super.mouseClicked(mx, my, button);
