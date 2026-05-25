@@ -12,7 +12,9 @@ public class MyMod {
     private static boolean wasClicking = false;
 
     public MyMod() {
+        // Регистрируем основной класс и подмодуль интерфейса отдельно
         NeoForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(new GuiHandler());
     }
 
     @SubscribeEvent
@@ -75,24 +77,22 @@ public class MyMod {
         } catch (Exception ignored) {}
     }
 
-    // 3. СНИЖЕНИЕ ОГНЯ НА ЭКРАНЕ НА 87% (ТОЧНОЕ ЗНАЧЕНИЕ -0.43D)
     @SubscribeEvent
     public void onRenderFire(net.neoforged.neoforge.client.event.RenderBlockScreenEffectEvent event) {
         try {
             Object type = event.getOverlayType();
             if (type.toString().contains("FIRE") || type.toString().contains("fire")) {
-                event.getPoseStack().translate(0.0D, -0.43D, 0.0D);
+                event.getPoseStack().translate(0.0D, -0.43D, 0.0D); // Огонь урезан ровно на 87%
             }
         } catch (Exception ignored) {}
     }
+}
 
-    // 4. ОТРИСОВКА ИНТЕРФЕЙСА БРОНИ И ЗОЛОТОЙ СЫТОСТИ В ЛЮБОМ СЛОЕ HUD
+class GuiHandler {
     @SubscribeEvent
-    public void onRenderGui(net.neoforged.bus.api.Event event) {
-        if (!event.getClass().getName().contains("RenderGuiLayerEvent")) return;
+    public void onRenderGui(net.neoforged.neoforge.client.event.RenderGuiLayerEvent.Post event) {
         try {
-            Method getLayerMethod = event.getClass().getMethod("getLayer");
-            Object layer = getLayerMethod.invoke(event);
+            Object layer = event.getLayer();
             String layerName = layer.toString();
             
             if (layerName.contains("FOOD_LEVEL") || layerName.contains("food") || layerName.contains("HOTBAR") || layerName.contains("hotbar")) {
@@ -101,13 +101,10 @@ public class MyMod {
                 Object player = mcClass.getField("player").get(mc);
                 
                 if (player != null) {
-                    Method getWindowMethod = event.getClass().getMethod("getWindow");
-                    Object window = getWindowMethod.invoke(event);
+                    Object window = event.getWindow();
                     int screenWidth = (int) window.getClass().getMethod("getGuiScaledWidth").invoke(window);
                     int screenHeight = (int) window.getClass().getMethod("getGuiScaledHeight").invoke(window);
-                    
-                    Method getGuiGraphicsMethod = event.getClass().getMethod("getGuiGraphics");
-                    Object graphics = getGuiGraphicsMethod.invoke(event);
+                    Object graphics = event.getGuiGraphics();
                     
                     int left = screenWidth / 2 + 91;
                     int top = screenHeight - 39;
@@ -120,9 +117,9 @@ public class MyMod {
                     
                     Method blit = graphics.getClass().getMethod("blit", rlClass, int.class, int.class, int.class, int.class, int.class, int.class);
                     for (int i = 0; i < 10; ++i) {
-                        if (localSaturation > i * 2) {
+                        if (MyMod.localSaturation > i * 2) {
                             int bx = left - i * 8 - 9;
-                            if (localSaturation - (i * 2) >= 2) blit.invoke(graphics, icons, bx, top, 16, 27, 9, 9);
+                            if (MyMod.localSaturation - (i * 2) >= 2) blit.invoke(graphics, icons, bx, top, 16, 27, 9, 9);
                             else blit.invoke(graphics, icons, bx, top, 25, 27, 9, 9);
                         }
                     }
