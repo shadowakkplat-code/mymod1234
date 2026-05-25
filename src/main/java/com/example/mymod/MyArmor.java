@@ -9,7 +9,7 @@ public class MyArmor {
 }
 
 class ConfigScreen extends Screen {
-    // ИСПРАВЛЕНО: Переменные левой руки теперь живут прямо здесь, компилятор их точно увидит!
+    // Переменные калибровки левой руки
     public static float leftY = 0.10f;
     public static float leftZ = -0.45f;
 
@@ -70,7 +70,7 @@ class ConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            // ОБРАБОТКА ЛЕВОЙ РУКИ (ИСПРАВЛЕНО: Перенаправлено на внутренние переменные)
+            // ОБРАБОТКА ЛЕВОЙ РУКИ
             if (mx >= cxLeft && mx <= cxLeft + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
                     leftY += 0.05f;
