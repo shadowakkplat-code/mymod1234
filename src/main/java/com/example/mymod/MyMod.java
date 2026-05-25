@@ -21,6 +21,9 @@ public class MyMod {
     private static boolean wasClicking = false;
     private static boolean wasKeyKDown = false;
     private static boolean wasKeyJDown = false;
+    
+    // ОПТИМИЗАЦИЯ: Выносим рандом в константу, чтобы не нагружать сборщик мусора (GC) в PvP
+    private static final java.util.Random RANDOM = new java.util.Random();
 
     public MyMod() {
         NeoForge.EVENT_BUS.register(this);
@@ -44,15 +47,14 @@ public class MyMod {
                 double z = target.getZ();
                 float height = target.getBbHeight();
                 
-                java.util.Random r = new java.util.Random();
                 for (int i = 0; i < 15; i++) {
-                    double offsetX = (r.nextDouble() - 0.5) * 1.2;
-                    double offsetZ = (r.nextDouble() - 0.5) * 1.2;
-                    double offsetY = r.nextDouble() * height;
+                    double offsetX = (RANDOM.nextDouble() - 0.5) * 1.2;
+                    double offsetZ = (RANDOM.nextDouble() - 0.5) * 1.2;
+                    double offsetY = RANDOM.nextDouble() * height;
                     
-                    double speedX = (r.nextDouble() - 0.5) * 0.25;
-                    double speedY = r.nextDouble() * 0.15;
-                    double speedZ = (r.nextDouble() - 0.5) * 0.25;
+                    double speedX = (RANDOM.nextDouble() - 0.5) * 0.25;
+                    double speedY = RANDOM.nextDouble() * 0.15;
+                    double speedZ = (RANDOM.nextDouble() - 0.5) * 0.25;
                     
                     mc.level.addParticle(ParticleTypes.CHERRY_LEAVES, x + offsetX, y + offsetY, z + offsetZ, speedX, speedY, speedZ);
                 }
@@ -62,14 +64,14 @@ public class MyMod {
 
         long windowHandle = mc.getWindow().getWindow();
         
-        // КЛАВИША К: Меню настроек для ПРАВОЙ стороны
+        // КЛАВИША К: Только правое меню
         boolean isKDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_K) == GLFW.GLFW_PRESS;
         if (isKDown && !wasKeyKDown && mc.screen == null) {
             mc.setScreen(new RightConfigScreen()); 
         }
         wasKeyKDown = isKDown;
 
-        // КЛАВИША J: Меню настроек для ЛЕВОЙ стороны
+        // КЛАВИША J: Только левое меню
         boolean isJDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_J) == GLFW.GLFW_PRESS;
         if (isJDown && !wasKeyJDown && mc.screen == null) {
             mc.setScreen(new LeftConfigScreen()); 
@@ -87,20 +89,28 @@ public class MyMod {
 
         PoseStack poseStack = event.getPoseStack();
         
-        // Определяем физическую сторону руки (левая или правая) на основе настроек левши/правши
+        // Вычисляем физическое положение руки
         HumanoidArm mainArm = mc.player.getMainArm();
         HumanoidArm currentArm = (event.getHand() == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
         
-        // Теперь жестко проверяем сторону руки через официальный API NeoForge 1.21.4
+        // ЖЕСТКАЯ ОПТИМИЗИРОВАННАЯ ИЗОЛЯЦИЯ СТОРОН ЧЕРЕЗ PUSH/POP
         if (currentArm == HumanoidArm.RIGHT) {
-            // ПРАВАЯ СТОРОНА: Управляется только клавишей K, размер 0.55f
+            poseStack.pushPose(); // Изолируем правую руку от левой
+            
+            // Настройки ПРАВОЙ руки (Клавиша K)
             poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
+            
+            poseStack.popPose(); // Закрываем стек правой руки
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            // ЛЕВАЯ СТОРОНА: Управляется только клавишей J, уменьшена ровно в 2 раза
+            poseStack.pushPose(); // Изолируем левую руку от правой
+            
+            // Настройки ЛЕВОЙ руки (Клавиша J)
             poseStack.translate(-0.315D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
             poseStack.scale(0.275f, 0.275f, 0.275f);
+            
+            poseStack.popPose(); // Закрываем стек левой руки
         }
     }
 }
