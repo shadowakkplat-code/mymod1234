@@ -27,11 +27,9 @@ public class MyMod {
         NeoForge.EVENT_BUS.register(new MyDamage()); 
     }
 
+    // ИСПРАВЛЕНО под NeoForge 1.21.4: Слушаем конкретное событие Post (конец тика)
     @SubscribeEvent
-    public void onClientTick(ClientTickEvent event) {
-        // Заменяем устаревший .Post на проверку фазы внутри события NeoForge 1.21.4
-        if (event.getPhase() != ClientTickEvent.Phase.END) return;
-        
+    public void onClientTickPost(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
 
@@ -94,10 +92,10 @@ public class MyMod {
                 poseStack.scale(0.55f, 0.55f, 0.55f);
             } 
             else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // ЛЕВАЯ РУКА: Полная изоляция от правой руки
-                poseStack.translate(-0.45D, 0.0D, 0.0D); // Сдвиг влево от центра рендера
+                // ЛЕВАЯ РУКА: Полная изоляция и уменьшение в два раза
+                poseStack.translate(-0.45D, 0.0D, 0.0D); // Жесткий сдвиг влево
                 poseStack.translate(0.0D, (double)MyConfig.leftY, (double)MyConfig.leftZ); 
-                poseStack.scale(0.275f, 0.275f, 0.275f); // Уменьшена ровно в два раза
+                poseStack.scale(0.275f, 0.275f, 0.275f); // Масштабирование
             }
         }
     }
