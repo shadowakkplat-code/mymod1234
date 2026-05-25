@@ -8,6 +8,10 @@ import net.neoforged.neoforge.common.NeoForge;
 @Mod("mymod")
 public class MyMod {
     private static boolean wasClicking = false;
+    
+    // Динамические настройки положения меча (покупатель сможет менять их в игре!)
+    public static float swordY = 0.10f;
+    public static float swordZ = -0.45f;
 
     public MyMod() {
         NeoForge.EVENT_BUS.register(this);
@@ -24,6 +28,7 @@ public class MyMod {
             Object level = mcClass.getField("level").get(mc);
             
             if (player != null && level != null) {
+                int tickCount = player.getClass().getField("tickCount").getInt(player);
                 Object options = mcClass.getField("options").get(mc);
                 Object keyAttack = options.getClass().getField("keyAttack").get(options);
                 boolean isDown = (boolean) keyAttack.getClass().getMethod("isDown").invoke(keyAttack);
@@ -61,7 +66,7 @@ public class MyMod {
         } catch (Exception ignored) {}
     }
 
-    // Идеальное PvP положение меча: выше на 10% и вперед на 45%
+    // Рендеринг меча с учётом кастомных настроек из меню
     @SubscribeEvent
     public void onRenderHand(net.neoforged.neoforge.client.event.RenderHandEvent event) {
         try {
@@ -72,10 +77,40 @@ public class MyMod {
                 itemName.contains("Sword") || itemName.contains("Axe") || itemName.contains("Pickaxe")) {
                 
                 com.mojang.blaze3d.vertex.PoseStack poseStack = event.getPoseStack();
-                poseStack.scale(0.55f, 0.55f, 0.55f); // Сохраняем аккуратный маленький размер
+                poseStack.scale(0.55f, 0.55f, 0.55f);
                 
-                // Сдвигаем по оси Y вверх (на +0.10) и по оси Z вперед (на -0.45)
-                poseStack.translate(0.12D, 0.10D, -0.45D); 
+                // Применяем переменные swordY и swordZ, которые меняются кнопками!
+                poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
+            }
+        } catch (Exception ignored) {}
+    }
+
+    // Хак: Создаем и добавляем кнопку настроек в левый верхний угол при нажатии на ESC
+    @SubscribeEvent
+    public void onScreenInit(net.neoforged.neoforge.client.event.ScreenEvent.Init.Post event) {
+        try {
+            Object screen = event.getScreen();
+            String screenName = screen.getClass().getName();
+            
+            // Если открыто ванильное меню паузы (PauseScreen / ESC)
+            if (screenName.contains("PauseScreen") || screenName.contains("pause")) {
+                Class<?> buttonClass = Class.forName("net.minecraft.client.gui.components.Button");
+                Class<?> componentClass = Class.forName("net.minecraft.network.chat.Component");
+                Object buttonText = componentClass.getMethod("literal", String.class).invoke(null, "⚔ PvP Mod Config");
+                
+                // Создаем кнопку в верхнем левом углу: X=10, Y=10, Ширина=110, Высота=20
+                Object pvpButton = buttonClass.getConstructor(int.class, int.class, int.class, int.class, componentClass, buttonClass.getDeclaredClasses()[0])
+                    .newInstance(10, 10, 110, 20, buttonText, (ButtonAction) -> {
+                        try {
+                            // При клике открываем наше кастомное меню калибровки
+                            Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
+                            Object mc = mcClass.getMethod("getInstance").invoke(null);
+                            mcClass.getMethod("setScreen", Class.forName("net.minecraft.client.gui.screens.Screen")).invoke(mc, new ConfigScreen());
+                        } catch (Exception ignored) {}
+                    });
+                
+                // Добавляем созданную кнопку на экран меню паузы
+                event.addListener(pvpButton);
             }
         } catch (Exception ignored) {}
     }
