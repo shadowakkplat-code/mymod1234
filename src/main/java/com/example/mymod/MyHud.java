@@ -2,13 +2,15 @@ package com.example.mymod;
 
 import java.lang.reflect.Method;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 public class MyHud {
     public static float localSaturation = 20.0f;
     private static int lastFoodLevel = 20;
 
     @SubscribeEvent
-    public void onClientTick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
+    public void onClientTick(ClientTickEvent.Post event) {
         try {
             Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
             Object mc = mcClass.getMethod("getInstance").invoke(null);
@@ -32,7 +34,7 @@ public class MyHud {
     }
 
     @SubscribeEvent
-    public void onRenderGui(net.neoforged.neoforge.client.event.RenderGuiLayerEvent.Post event) {
+    public void onRenderGui(RenderGuiLayerEvent.Post event) {
         try {
             Method getLayerMethod = event.getClass().getMethod("getLayer");
             Object layer = getLayerMethod.invoke(event);
