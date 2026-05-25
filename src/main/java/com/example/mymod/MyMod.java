@@ -20,18 +20,16 @@ public class MyMod {
     private static boolean wasClicking = false;
     private static boolean wasKeyKDown = false;
     
-    // Координаты для ПРАВОЙ руки
+    // Координаты исключительно для ПРАВОЙ руки
     public static float swordY = 0.10f;
     public static float swordZ = -0.45f;
-    
-    // Координаты для ЛЕВОЙ руки
-    public static float leftSwordY = 0.10f;
-    public static float leftSwordZ = -0.45f;
 
     public MyMod() {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyHud()); 
+        // ИСПРАВЛЕНО: Регистрируем новый изолированный класс левой руки
+        NeoForge.EVENT_BUS.register(new MyLeftHand()); 
     }
 
     @SubscribeEvent
@@ -79,25 +77,17 @@ public class MyMod {
 
     @SubscribeEvent
     public void onRenderHand(RenderHandEvent event) {
+        // ИСПРАВЛЕНО: Этот метод теперь обрабатывает ТОЛЬКО главную (правую) руку
+        if (event.getHand() != InteractionHand.MAIN_HAND) return;
+
         ItemStack itemStack = event.getItemStack();
         if (itemStack.isEmpty()) return;
 
         String itemName = itemStack.getItem().toString().toLowerCase();
-        
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
-            
-            // ИСПРАВЛЕНО: Теперь руки жестко разделены по независимым переменным
-            if (event.getHand() == InteractionHand.MAIN_HAND) {
-                // Масштаб и сдвиг для ПРАВОЙ (главной) руки
-                poseStack.scale(0.55f, 0.55f, 0.55f);
-                poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
-            } else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // Масштаб и сдвиг для ЛЕВОЙ (второй) руки.
-                // Ось X инвертирована (-0.12D), чтобы предмет ложился ровно в левую руку
-                poseStack.scale(0.55f, 0.55f, 0.55f);
-                poseStack.translate(-0.12D, (double)leftSwordY, (double)leftSwordZ); 
-            }
+            poseStack.scale(0.55f, 0.55f, 0.55f);
+            poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
         }
     }
 }
