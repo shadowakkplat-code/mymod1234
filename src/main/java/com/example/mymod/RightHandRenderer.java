@@ -13,6 +13,8 @@ public class RightHandRenderer {
             
             poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
+            
+            poseStack.popPose(); // ИСПРАВЛЕНО: Закрываем стек матрицы
         }
     }
 }
