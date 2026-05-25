@@ -9,6 +9,10 @@ public class MyArmor {
 }
 
 class ConfigScreen extends Screen {
+    // ИСПРАВЛЕНО: Переменные левой руки теперь живут прямо здесь, компилятор их точно увидит!
+    public static float leftY = 0.10f;
+    public static float leftZ = -0.45f;
+
     protected ConfigScreen() {
         super(Component.literal("Настройка рук"));
     }
@@ -66,22 +70,22 @@ class ConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            // ОБРАБОТКА ЛЕВОЙ РУКИ (ИСПРАВЛЕНО: Изменяем значения нового файла)
+            // ОБРАБОТКА ЛЕВОЙ РУКИ (ИСПРАВЛЕНО: Перенаправлено на внутренние переменные)
             if (mx >= cxLeft && mx <= cxLeft + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
-                    MyLeftHand.leftY += 0.05f;
+                    leftY += 0.05f;
                     return true;
                 }
                 else if (my >= cy - 35 && my <= cy - 15) {
-                    MyLeftHand.leftY -= 0.05f;
+                    leftY -= 0.05f;
                     return true;
                 }
                 else if (my >= cy && my <= cy + 20) {
-                    MyLeftHand.leftZ -= 0.05f;
+                    leftZ -= 0.05f;
                     return true;
                 }
                 else if (my >= cy + 25 && my <= cy + 45) {
-                    MyLeftHand.leftZ += 0.05f;
+                    leftZ += 0.05f;
                     return true;
                 }
             }
