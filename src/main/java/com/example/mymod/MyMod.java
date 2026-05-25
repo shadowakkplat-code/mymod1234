@@ -32,8 +32,13 @@ public class MyMod {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
 
+        // Полное отключение тряски рук/предметов на программном уровне в каждом тике клиента
+        if (mc.player.hurtTime > 0) {
+            mc.player.hurtDuration = 0;
+            mc.player.hurtTime = 0;
+        }
+
         boolean isDown = mc.options.keyAttack.isDown();
-        
         if (isDown && !wasClicking) {
             HitResult hitResult = mc.hitResult;
             if (hitResult != null && hitResult.getType() == HitResult.Type.ENTITY) {
@@ -45,7 +50,6 @@ public class MyMod {
                 float height = target.getBbHeight();
                 
                 java.util.Random r = new java.util.Random();
-                
                 for (int i = 0; i < 15; i++) {
                     double offsetX = (r.nextDouble() - 0.5) * 1.2;
                     double offsetZ = (r.nextDouble() - 0.5) * 1.2;
@@ -80,18 +84,21 @@ public class MyMod {
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
             
-            // Проверяем конкретный тип руки через геттер события без посредников
+            // ПРАВАЯ РУКА (MAIN_HAND)
             if (event.getHand() == InteractionHand.MAIN_HAND) {
-                // ПРАВАЯ РУКА: Масштаб 0.55f, слушает MyConfig.rightY и rightZ
-                poseStack.scale(0.55f, 0.55f, 0.55f);
                 poseStack.translate(0.12D, (double)MyConfig.rightY, (double)MyConfig.rightZ); 
+                poseStack.scale(0.55f, 0.55f, 0.55f);
             } 
+            // ЛЕВАЯ РУКА (OFF_HAND) - Принудительное изолированное масштабирование
             else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // ЛЕВАЯ РУКА: Уменьшена в 2 раза (0.275f), слушает MyConfig.leftY и leftZ
-                poseStack.scale(0.275f, 0.275f, 0.275f);
+                // Сначала сильно смещаем её влево по оси X, чтобы компенсировать ванильное отзеркаливание
+                poseStack.translate(-0.45D, 0.0D, 0.0D);
                 
-                // Смещаем по X влево (-0.35D), чтобы рука визуально ушла в левую часть экрана и управлялась отдельно
-                poseStack.translate(-0.35D, (double)MyConfig.leftY, (double)MyConfig.leftZ); 
+                // Применяем кастомные координаты калибровки левой руки из MyConfig
+                poseStack.translate(0.0D, (double)MyConfig.leftY, (double)MyConfig.leftZ); 
+                
+                // Делаем левую руку ровно в два раза меньше правой (0.275f от оригинала)
+                poseStack.scale(0.275f, 0.275f, 0.275f);
             }
         }
     }
