@@ -42,14 +42,18 @@ public class MyHud {
                 PoseStack poseStack = graphics.pose();
                 poseStack.pushPose();
                 
+                // Перемещаем и масштабируем иконку брони
                 poseStack.translate(currentX, topArmor, 0.0f);
                 poseStack.scale(0.82f, 0.82f, 0.82f);
                 
+                // Рендерим сам предмет и полоску его прочности
                 graphics.renderItem(armorStack, 0, 0);
                 graphics.renderItemDecorations(mc.font, armorStack, 0, 0);
                 
                 poseStack.popPose();
-                currentX -= 24; 
+                
+                // Смещаем X для следующего элемента (размер 16 пикселей * масштаб + отступ)
+                currentX -= 15; 
             }
         }
     }
