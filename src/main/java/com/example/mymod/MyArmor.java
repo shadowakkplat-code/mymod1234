@@ -1,6 +1,7 @@
 package com.example.mymod;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -33,30 +34,27 @@ class ConfigScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         
-        // Подсказка снизу экрана
         graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 105, 0xAAAAAA);
         
         int cy = this.height / 2;
-        int cxLeft = this.width / 2 - 120;  // Позиция кнопок для ЛЕВОЙ РУКИ (слева)
-        int cxRight = this.width / 2 + 20;  // Позиция кнопок для ПРАВОЙ РУКИ (справа)
+        int cxLeft = this.width / 2 - 120;  
+        int cxRight = this.width / 2 + 20;  
         
-        // Заголовки половин экрана
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", cxLeft + 50, cy - 80, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 80, 0xFF5555);
 
-        // 1 ПОЛОВИНА: Кнопки управления ЛЕВОЙ РУКОЙ
+        // Кнопки управления ЛЕВОЙ РУКОЙ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (Л)", cxLeft, cy + 25, 100, 20, mouseX, mouseY);
         
-        // 2 ПОЛОВИНА: Кнопки управления ПРАВОЙ РУКОЙ
+        // Кнопки управления ПРАВОЙ РУКОЙ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (П)", cxRight, cy + 25, 100, 20, mouseX, mouseY);
         
-        // Общая кнопка закрытия по центру в самом низу
         drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 65, 100, 20, mouseX, mouseY);
         
         super.render(graphics, mouseX, mouseY, partialTick);
@@ -68,45 +66,58 @@ class ConfigScreen extends Screen {
             int cy = this.height / 2;
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
+            Minecraft mc = Minecraft.getInstance();
             
-            // ОБРАБОТКА НАЖАТИЙ НА КНОПКИ ЛЕВОЙ РУКИ (Левая половина)
+            // ИСПРАВЛЕНО: Добавлен сброс анимации рук при клике, чтобы новые координаты применялись на лету!
+            boolean clicked = false;
+            
+            // ОБРАБОТКА НАЖАТИЙ НА КНОПКИ ЛЕВОЙ РУКИ
             if (mx >= cxLeft && mx <= cxLeft + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
                     MyMod.leftSwordY += 0.05f;
-                    return true;
+                    clicked = true;
                 }
                 else if (my >= cy - 35 && my <= cy - 15) {
                     MyMod.leftSwordY -= 0.05f;
-                    return true;
+                    clicked = true;
                 }
                 else if (my >= cy && my <= cy + 20) {
                     MyMod.leftSwordZ -= 0.05f;
-                    return true;
+                    clicked = true;
                 }
                 else if (my >= cy + 25 && my <= cy + 45) {
                     MyMod.leftSwordZ += 0.05f;
-                    return true;
+                    clicked = true;
                 }
             }
             
-            // ОБРАБОТКА НАЖАТИЙ НА КНОПКИ ПРАВОЙ РУКИ (Правая половина)
+            // ОБРАБОТКА НАЖАТИЙ НА КНОПКИ ПРАВОЙ РУКИ
             if (mx >= cxRight && mx <= cxRight + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
                     MyMod.swordY += 0.05f;
-                    return true;
+                    clicked = true;
                 }
                 else if (my >= cy - 35 && my <= cy - 15) {
                     MyMod.swordY -= 0.05f;
-                    return true;
+                    clicked = true;
                 }
                 else if (my >= cy && my <= cy + 20) {
                     MyMod.swordZ -= 0.05f;
-                    return true;
+                    clicked = true;
                 }
                 else if (my >= cy + 25 && my <= cy + 45) {
                     MyMod.swordZ += 0.05f;
-                    return true;
+                    clicked = true;
                 }
+            }
+            
+            // Если была нажата кнопка калибровки — заставляем Minecraft принудительно обновить 3D-модели в руках
+            if (clicked && mc.gameRenderer != null) {
+                mc.gameRenderer.itemInHandRenderer.itemUsedInMainHandEvent(
+                    mc.player.getUsedItemHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? 
+                    mc.player.getMainHandItem() : mc.player.getOffhandItem()
+                );
+                return true;
             }
             
             // КНОПКА ЗАКРЫТЬ
