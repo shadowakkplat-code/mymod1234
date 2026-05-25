@@ -12,7 +12,6 @@ public class MyMod {
     private static boolean wasClicking = false;
 
     public MyMod() {
-        // Регистрируем основной класс и подмодуль интерфейса отдельно
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new GuiHandler());
     }
@@ -82,7 +81,7 @@ public class MyMod {
         try {
             Object type = event.getOverlayType();
             if (type.toString().contains("FIRE") || type.toString().contains("fire")) {
-                event.getPoseStack().translate(0.0D, -0.43D, 0.0D); // Огонь урезан ровно на 87%
+                event.getPoseStack().translate(0.0D, -0.43D, 0.0D);
             }
         } catch (Exception ignored) {}
     }
@@ -101,10 +100,13 @@ class GuiHandler {
                 Object player = mcClass.getField("player").get(mc);
                 
                 if (player != null) {
-                    Object window = event.getWindow();
+                    // Исправлено: получаем окно и размеры экрана напрямую через Minecraft
+                    Object window = mcClass.getMethod("getWindow").invoke(mc);
                     int screenWidth = (int) window.getClass().getMethod("getGuiScaledWidth").invoke(window);
                     int screenHeight = (int) window.getClass().getMethod("getGuiScaledHeight").invoke(window);
-                    Object graphics = event.getGuiGraphics();
+                    
+                    Method getGuiGraphicsMethod = event.getClass().getMethod("getGuiGraphics");
+                    Object graphics = getGuiGraphicsMethod.invoke(event);
                     
                     int left = screenWidth / 2 + 91;
                     int top = screenHeight - 39;
