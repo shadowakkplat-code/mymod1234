@@ -2,6 +2,7 @@ package com.example.mymod;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -78,20 +79,26 @@ public class MyMod {
 
     @SubscribeEvent
     public void onRenderHand(RenderHandEvent event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+        
         ItemStack itemStack = event.getItemStack();
         if (itemStack.isEmpty()) return;
 
         PoseStack poseStack = event.getPoseStack();
         
-        // Проверяем, с какой стороны (RIGHT или LEFT) рендерится предмет в данный момент кадра
-        // Это гарантирует, что настройки K применятся ТОЛЬКО к правому предмету, а J — к левому
-        if (event.getHandSide() == HumanoidArm.RIGHT) {
-            // ПРАВАЯ СТОРОНА: Слушает только RightHandConfig (клавиша K), размер 0.55f
+        // Определяем физическую сторону руки (левая или правая) на основе настроек левши/правши
+        HumanoidArm mainArm = mc.player.getMainArm();
+        HumanoidArm currentArm = (event.getHand() == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
+        
+        // Теперь жестко проверяем сторону руки через официальный API NeoForge 1.21.4
+        if (currentArm == HumanoidArm.RIGHT) {
+            // ПРАВАЯ СТОРОНА: Управляется только клавишей K, размер 0.55f
             poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
         } 
-        else if (event.getHandSide() == HumanoidArm.LEFT) {
-            // ЛЕВАЯ СТОРОНА: Слушает только LeftHandConfig (клавиша J), уменьшена ровно в 2 раза
+        else if (currentArm == HumanoidArm.LEFT) {
+            // ЛЕВАЯ СТОРОНА: Управляется только клавишей J, уменьшена ровно в 2 раза
             poseStack.translate(-0.315D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
             poseStack.scale(0.275f, 0.275f, 0.275f);
         }
