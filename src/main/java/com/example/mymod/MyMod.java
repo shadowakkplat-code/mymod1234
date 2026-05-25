@@ -90,23 +90,14 @@ public class MyMod {
         HumanoidArm currentArm = (event.getHand() == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
         
         if (currentArm == HumanoidArm.RIGHT) {
-            // ПРАВАЯ РУКА: Открываем защитный изолированный стек
             poseStack.pushPose();
-            
-            // Динамическое перемещение по всем ТРЕМ осям (X, Y, Z) из RightHandConfig
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
-            
-            // ВАЖНО: Мы НЕ пишем здесь popPose(), давая ванильному коду завершить рендер с этой матрицей.
-            // Матрица закроется автоматически при завершении кадра руки, не влияя на левую руку.
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            // ЛЕВАЯ РУКА: Открываем отдельный защитный стек
             poseStack.pushPose();
-            
-            // Динамическое перемещение по всем ТРЕМ осям (X, Y, Z) из LeftHandConfig
             poseStack.translate((double)LeftHandConfig.leftX, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
-            poseStack.scale(0.275f, 0.275f, 0.275f); // Масштаб уменьшен ровно в 2 раза
+            poseStack.scale(0.275f, 0.275f, 0.275f);
         }
     }
 }
