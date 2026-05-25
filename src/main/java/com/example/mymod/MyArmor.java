@@ -6,10 +6,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class MyArmor {
+    // Данный класс используется как контейнер для ConfigScreen. Отрисовка HUD вынесена в MyHud.java
 }
 
 class ConfigScreen extends Screen {
-    // Переменные калибровки левой руки
+    // Независимые переменные калибровки ЛЕВОЙ руки, которые считывает MyMod.java
     public static float leftY = 0.10f;
     public static float leftZ = -0.45f;
 
@@ -37,27 +38,30 @@ class ConfigScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         
+        // Подсказка выхода в самом низу меню
         graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 105, 0xAAAAAA);
         
         int cy = this.height / 2;
         int cxLeft = this.width / 2 - 120;  
         int cxRight = this.width / 2 + 20;  
         
+        // Красивые цветные заголовки половин меню
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА  ]", cxLeft + 50, cy - 80, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 80, 0xFF5555);
 
-        // Кнопки ЛЕВОЙ РУКИ
+        // 1 ПОЛОВИНА: Кнопки ЛЕВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (Л)", cxLeft, cy + 25, 100, 20, mouseX, mouseY);
         
-        // Кнопки ПРАВОЙ РУКИ
+        // 2 ПОЛОВИНА: Кнопки ПРАВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (П)", cxRight, cy + 25, 100, 20, mouseX, mouseY);
         
+        // Общая кнопка закрытия по центру снизу
         drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 65, 100, 20, mouseX, mouseY);
         
         super.render(graphics, mouseX, mouseY, partialTick);
@@ -70,7 +74,7 @@ class ConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            // ОБРАБОТКА ЛЕВОЙ РУКИ
+            // ОБРАБОТКА КЛИКОВ НА ЛЕВОЙ ПОЛОВИНЕ (Изменяют внутренние leftY и leftZ)
             if (mx >= cxLeft && mx <= cxLeft + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
                     leftY += 0.05f;
@@ -90,7 +94,7 @@ class ConfigScreen extends Screen {
                 }
             }
             
-            // ОБРАБОТКА ПРАВОЙ РУКИ
+            // ОБРАБОТКА КЛИКОВ НА ПРАВОЙ ПОЛОВИНЕ (Изменяют переменные из MyMod)
             if (mx >= cxRight && mx <= cxRight + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
                     MyMod.swordY += 0.05f;
@@ -110,6 +114,7 @@ class ConfigScreen extends Screen {
                 }
             }
             
+            // ОБРАБОТКА КНОПКИ ЗАКРЫТЬ
             int closeX = this.width / 2 - 50;
             if (mx >= closeX && mx <= closeX + 100 && my >= cy + 65 && my <= cy + 85) {
                 if (this.minecraft != null) {
