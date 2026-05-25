@@ -9,7 +9,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.core.particles.ParticleTypes;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.fml.common.Mod;
+import net.neoforged.fml.common.Mod; // ИСПРАВЛЕНО: Правильный пакет для NeoForge
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -24,7 +24,6 @@ public class MyMod {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyHud()); 
-        // Класс MyDamage полностью удален из регистрации
     }
 
     @SubscribeEvent
@@ -79,12 +78,12 @@ public class MyMod {
         if (isWeapon) {
             PoseStack poseStack = event.getPoseStack();
             
-            // ПРАВАЯ РУКА (MAIN_HAND) — Считывает строго RightHandConfig
+            // ПРАВАЯ РУКА
             if (event.getHand() == InteractionHand.MAIN_HAND) {
                 poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
                 poseStack.scale(0.55f, 0.55f, 0.55f);
             } 
-            // ЛЕВАЯ РУКА (OFF_HAND) — Считывает строго LeftHandConfig
+            // ЛЕВАЯ РУКА
             else if (event.getHand() == InteractionHand.OFF_HAND) {
                 poseStack.translate(-0.45D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
                 poseStack.scale(0.275f, 0.275f, 0.275f);
