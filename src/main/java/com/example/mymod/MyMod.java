@@ -9,7 +9,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.core.particles.ParticleTypes;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod; // ИСПРАВЛЕНО: Правильный пакет для NeoForge
+import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -85,7 +85,8 @@ public class MyMod {
             } 
             // ЛЕВАЯ РУКА
             else if (event.getHand() == InteractionHand.OFF_HAND) {
-                poseStack.translate(-0.45D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
+                // ИСПРАВЛЕНО: Сместили значение по оси X с -0.45D на -0.315D (сдвиг вправо на 30%)
+                poseStack.translate(-0.315D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
                 poseStack.scale(0.275f, 0.275f, 0.275f);
             }
         }
