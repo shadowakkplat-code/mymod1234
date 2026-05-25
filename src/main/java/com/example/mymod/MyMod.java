@@ -19,6 +19,7 @@ import org.lwjgl.glfw.GLFW;
 public class MyMod {
     private static boolean wasClicking = false;
     private static boolean wasKeyKDown = false;
+    private static boolean wasKeyJDown = false; // Отдельный триггер для J
 
     public MyMod() {
         NeoForge.EVENT_BUS.register(this);
@@ -59,12 +60,20 @@ public class MyMod {
         wasClicking = isDown;
 
         long windowHandle = mc.getWindow().getWindow();
-        boolean isKDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_K) == GLFW.GLFW_PRESS;
         
+        // ОБРАБОТКА НАЖАТИЯ НА КЛАВИШУ К (Правая рука)
+        boolean isKDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_K) == GLFW.GLFW_PRESS;
         if (isKDown && !wasKeyKDown && mc.screen == null) {
-            mc.setScreen(new ConfigScreen()); 
+            mc.setScreen(new RightConfigScreen()); 
         }
         wasKeyKDown = isKDown;
+
+        // ОБРАБОТКА НАЖАТИЯ НА КЛАВИШУ J (Левая рука)
+        boolean isJDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_J) == GLFW.GLFW_PRESS;
+        if (isJDown && !wasKeyJDown && mc.screen == null) {
+            mc.setScreen(new LeftConfigScreen()); 
+        }
+        wasKeyJDown = isJDown;
     }
 
     @SubscribeEvent
@@ -78,14 +87,13 @@ public class MyMod {
         if (isWeapon) {
             PoseStack poseStack = event.getPoseStack();
             
-            // ПРАВАЯ РУКА
+            // ПРАВАЯ РУКА (MAIN_HAND) — Обычный размер 0.55f
             if (event.getHand() == InteractionHand.MAIN_HAND) {
                 poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
                 poseStack.scale(0.55f, 0.55f, 0.55f);
             } 
-            // ЛЕВАЯ РУКА
+            // ЛЕВАЯ РУКА (OFF_HAND) — Жестко уменьшена ровно в 2 раза относительно правой (0.275f)
             else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // ИСПРАВЛЕНО: Сместили значение по оси X с -0.45D на -0.315D (сдвиг вправо на 30%)
                 poseStack.translate(-0.315D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
                 poseStack.scale(0.275f, 0.275f, 0.275f);
             }
