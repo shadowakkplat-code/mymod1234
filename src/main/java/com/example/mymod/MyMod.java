@@ -8,13 +8,13 @@ import net.neoforged.neoforge.common.NeoForge;
 @Mod("mymod")
 public class MyMod {
     private static boolean wasClicking = false;
-    private static boolean wasKeyPDown = false;
+    private static boolean wasKeyKDown = false;
     
+    // Переменные калибровки положения меча в руках
     public static float swordY = 0.10f;
     public static float swordZ = -0.45f;
 
     public MyMod() {
-        // Регистрируем всё в одной стандартной стабильной шине
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyArmor());
@@ -31,7 +31,7 @@ public class MyMod {
             if (player != null && level != null) {
                 int tickCount = player.getClass().getField("tickCount").getInt(player);
                 
-                // 1. ОТСЛЕЖИВАНИЕ PvP-УДАРА ДЛЯ САКУРЫ
+                // 1. ЛЕПЕСТКИ САКУРЫ ПРИ PvP УДАРЕ
                 Object options = mcClass.getField("options").get(mc);
                 Object keyAttack = options.getClass().getField("keyAttack").get(options);
                 boolean isDown = (boolean) keyAttack.getClass().getMethod("isDown").invoke(keyAttack);
@@ -66,19 +66,18 @@ public class MyMod {
                 }
                 wasClicking = isDown;
 
-                // 2. ХАК: ОТКРЫТИЕ МЕНЮ НАСТРОЕК МЕЧА НА АНГЛИЙСКУЮ КЛАВИШУ "P" ПРЯМО В МИРЕ!
+                // 2. ОТКРЫТИЕ МЕНЮ НА АНГЛИЙСКУЮ БУКВУ "K" (Код GLFW_KEY_K = 75)
                 long windowHandle = (long) mcClass.getMethod("getWindow").invoke(mc).getClass().getMethod("getWindow").invoke(mcClass.getMethod("getWindow").invoke(mc));
                 Class<?> glfwClass = Class.forName("org.lwjgl.glfw.GLFW");
                 Method getKeyMethod = glfwClass.getMethod("glfwGetKey", long.class, int.class);
                 
-                // 80 — это системный код клавиши P (GLFW_KEY_P)
-                int keyState = (int) getKeyMethod.invoke(null, windowHandle, 80); 
-                boolean isPDown = (keyState == 1);
+                int keyState = (int) getKeyMethod.invoke(null, windowHandle, 75); 
+                boolean isKDown = (keyState == 1);
                 
-                if (isPDown && !wasKeyPDown && mcClass.getField("screen").get(mc) == null) {
+                if (isKDown && !wasKeyKDown && mcClass.getField("screen").get(mc) == null) {
                     mcClass.getMethod("setScreen", Class.forName("net.minecraft.client.gui.screens.Screen")).invoke(mc, new ConfigScreen());
                 }
-                wasKeyPDown = isPDown;
+                wasKeyKDown = isKDown;
             }
         } catch (Exception ignored) {}
     }
