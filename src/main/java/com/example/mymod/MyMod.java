@@ -20,7 +20,7 @@ public class MyMod {
     private static boolean wasClicking = false;
     private static boolean wasKeyKDown = false;
     
-    // Координаты исключительно для ПРАВОЙ руки
+    // Переменные для ПРАВОЙ руки
     public static float swordY = 0.10f;
     public static float swordZ = -0.45f;
 
@@ -28,7 +28,7 @@ public class MyMod {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyHud()); 
-        NeoForge.EVENT_BUS.register(new MyLeftHand()); 
+        // Класс MyLeftHand отсюда удален, так как всё объединено ниже
     }
 
     @SubscribeEvent
@@ -76,17 +76,25 @@ public class MyMod {
 
     @SubscribeEvent
     public void onRenderHand(RenderHandEvent event) {
-        // ИСПРАВЛЕНО: Жёсткий пропуск, если это ЛЕВАЯ рука. Теперь этот файл ей не управляет!
-        if (event.getHand() != InteractionHand.MAIN_HAND) return;
-
         ItemStack itemStack = event.getItemStack();
         if (itemStack.isEmpty()) return;
 
         String itemName = itemStack.getItem().toString().toLowerCase();
+        
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
-            poseStack.scale(0.55f, 0.55f, 0.55f);
-            poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
+            
+            // ЖЕСТКОЕ РАЗДЕЛЕНИЕ РЕНДЕРИНГА РУК В ОДНОМ МЕСТЕ
+            if (event.getHand() == InteractionHand.MAIN_HAND) {
+                // Настройки ПРАВОЙ руки: Обычный размер (0.55f), управление от своих кнопок
+                poseStack.scale(0.55f, 0.55f, 0.55f);
+                poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
+            } 
+            else if (event.getHand() == InteractionHand.OFF_HAND) {
+                // Настройки ЛЕВОЙ руки: УМЕНЬШЕНА В 2 РАЗА (0.275f), берет координаты из ConfigScreen
+                poseStack.scale(0.275f, 0.275f, 0.275f);
+                poseStack.translate(-0.24D, (double)ConfigScreen.leftY, (double)ConfigScreen.leftZ); 
+            }
         }
     }
 }
