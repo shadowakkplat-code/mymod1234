@@ -24,9 +24,8 @@ public class MyArmor {
         int screenHeight = graphics.guiHeight();
         
         // 1. ОТРИСОВКА ИКОНОК БРОНИ
-        // Корректируем начальную позицию, чтобы растянуть броню на всю длину шкалы голода
         int leftArmor = screenWidth / 2 + 15; 
-        int topArmor = screenHeight - 51; // Чуть приподняли для увеличенного размера
+        int topArmor = screenHeight - 51; 
         
         EquipmentSlot[] slots = {
             EquipmentSlot.FEET, 
@@ -45,35 +44,30 @@ public class MyArmor {
                 poseStack.pushPose();
                 
                 poseStack.translate(currentX, topArmor, 0.0f);
-                // ИСПРАВЛЕНО: Увеличили размер иконок на 5% (с 0.72f до 0.77f)
                 poseStack.scale(0.77f, 0.77f, 0.77f);
                 
                 graphics.renderItem(armorStack, 0, 0);
                 graphics.renderItemDecorations(mc.font, armorStack, 0, 0);
                 
                 poseStack.popPose();
-                // ИСПРАВЛЕНО: Шаг увеличен до 24 пикселей, чтобы растянуть на всю длину панели
                 currentX += 24; 
             }
         }
 
-        // 2. ОТРИСОВКА ТЕКСТА СЫТОСТИ (SATURATION)
+        // 2. ОТРИСОВКА ТЕКСТА СЫТОСТИ
         float saturation = mc.player.getFoodData().getSaturationLevel();
-        // Форматируем до одного знака после запятой (например: "14.5")
         String satText = String.format("%.1f", saturation); 
         
-        // Координаты текста ровно по центру над шкалой еды
         int satX = screenWidth / 2 + 50; 
         int satY = screenHeight - 48; 
         
-        // Рисуем текст сытости золотым цветом с красивой черной тенью
         graphics.drawString(mc.font, satText, satX, satY, 0xFFFF55, true);
     }
 }
 
 class ConfigScreen extends Screen {
     protected ConfigScreen() {
-        super(Component.literal("Sword Config"));
+        super(Component.literal("Настройка меча"));
     }
 
     @Override
@@ -95,16 +89,20 @@ class ConfigScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.drawCenteredString(this.font, "⚔ PvP Client - Calibration Menu ⚔", this.width / 2, this.height / 2 - 85, 0xFFFFFF);
-        graphics.drawCenteredString(this.font, "Press ESC to return to game", this.width / 2, this.height / 2 + 95, 0xAAAAAA);
+        
+        // Заменили мечи на классические текстовые стрелочки-разделители
+        graphics.drawCenteredString(this.font, "-> PvP Клиент - Меню калибровки <-", this.width / 2, this.height / 2 - 85, 0xFFFFFF);
+        graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 95, 0xAAAAAA);
         
         int cx = this.width / 2 - 50;
         int cy = this.height / 2;
-        drawCustomButton(graphics, "▲ Higher", cx, cy - 60, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "▼ Lower", cx, cy - 35, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "✦ Further", cx, cy, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "⏳ Closer", cx, cy + 25, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "✔ Close", cx, cy + 65, 100, 20, mouseX, mouseY);
+        
+        // Все смайлики на кнопках заменены на стрелочки (^, v, ->, <-) и галочку [x]
+        drawCustomButton(graphics, "^ Выше", cx, cy - 60, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "v Ниже", cx, cy - 35, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "-> Дальше", cx, cy, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "<- Ближе", cx, cy + 25, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "[x] Закрыть", cx, cy + 65, 100, 20, mouseX, mouseY);
         
         super.render(graphics, mouseX, mouseY, partialTick);
     }
