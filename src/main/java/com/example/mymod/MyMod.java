@@ -28,7 +28,6 @@ public class MyMod {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyHud()); 
-        // ИСПРАВЛЕНО: Регистрируем новый изолированный класс левой руки
         NeoForge.EVENT_BUS.register(new MyLeftHand()); 
     }
 
@@ -77,7 +76,7 @@ public class MyMod {
 
     @SubscribeEvent
     public void onRenderHand(RenderHandEvent event) {
-        // ИСПРАВЛЕНО: Этот метод теперь обрабатывает ТОЛЬКО главную (правую) руку
+        // ИСПРАВЛЕНО: Жёсткий пропуск, если это ЛЕВАЯ рука. Теперь этот файл ей не управляет!
         if (event.getHand() != InteractionHand.MAIN_HAND) return;
 
         ItemStack itemStack = event.getItemStack();
