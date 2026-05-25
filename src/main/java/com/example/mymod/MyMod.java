@@ -23,10 +23,11 @@ public class MyMod {
     public static float swordZ = -0.45f;
 
     public MyMod() {
+        // РЕГИСТРИРУЕМ ТОЛЬКО ТЕ КЛАССЫ, ГДЕ ЕСТЬ @SubscribeEvent
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
-        NeoForge.EVENT_BUS.register(new MyArmor());
         NeoForge.EVENT_BUS.register(new MyHud()); 
+        // Строка с MyArmor полностью удалена, игра больше не будет вылетать!
     }
 
     @SubscribeEvent
@@ -81,7 +82,6 @@ public class MyMod {
         
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
-            // ИСПРАВЛЕНО: Убрали pushPose/popPose. Теперь изменения масштаба и координат применяются к руке напрямую!
             poseStack.scale(0.55f, 0.55f, 0.55f);
             poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
         }
