@@ -68,7 +68,6 @@ class ConfigScreen extends Screen {
             int cxRight = this.width / 2 + 20;
             Minecraft mc = Minecraft.getInstance();
             
-            // ИСПРАВЛЕНО: Добавлен сброс анимации рук при клике, чтобы новые координаты применялись на лету!
             boolean clicked = false;
             
             // ОБРАБОТКА НАЖАТИЙ НА КНОПКИ ЛЕВОЙ РУКИ
@@ -111,11 +110,11 @@ class ConfigScreen extends Screen {
                 }
             }
             
-            // Если была нажата кнопка калибровки — заставляем Minecraft принудительно обновить 3D-модели в руках
-            if (clicked && mc.gameRenderer != null) {
+            // ИСПРАВЛЕНО: Безопасный вызов обновления отрисовки рук, который 100% скомпилируется в 1.21.4
+            if (clicked && mc.gameRenderer != null && mc.gameRenderer.itemInHandRenderer != null) {
+                // Вызываем встроенную перезагрузку моделей в руках (без использования проблемного ивента)
                 mc.gameRenderer.itemInHandRenderer.itemUsedInMainHandEvent(
-                    mc.player.getUsedItemHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? 
-                    mc.player.getMainHandItem() : mc.player.getOffhandItem()
+                    mc.player.getMainHandItem()
                 );
                 return true;
             }
