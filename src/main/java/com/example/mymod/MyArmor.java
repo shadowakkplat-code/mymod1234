@@ -20,13 +20,13 @@ public class MyArmor {
         if (mc.screen != null || mc.player == null) return;
 
         GuiGraphics graphics = event.getGuiGraphics();
-        
-        // ИСПРАВЛЕНО: получаем размеры экрана через встроенные методы GuiGraphics
         int screenWidth = graphics.guiWidth();
         int screenHeight = graphics.guiHeight();
         
-        int left = screenWidth / 2 + 91;
-        int top = screenHeight - 49; 
+        // 1. ОТРИСОВКА ИКОНОК БРОНИ
+        // Корректируем начальную позицию, чтобы растянуть броню на всю длину шкалы голода
+        int leftArmor = screenWidth / 2 + 15; 
+        int topArmor = screenHeight - 51; // Чуть приподняли для увеличенного размера
         
         EquipmentSlot[] slots = {
             EquipmentSlot.FEET, 
@@ -35,7 +35,7 @@ public class MyArmor {
             EquipmentSlot.HEAD
         };
         
-        int currentX = left - 9;
+        int currentX = leftArmor;
 
         for (EquipmentSlot slot : slots) {
             ItemStack armorStack = mc.player.getItemBySlot(slot);
@@ -44,16 +44,30 @@ public class MyArmor {
                 PoseStack poseStack = graphics.pose();
                 poseStack.pushPose();
                 
-                poseStack.translate(currentX, top, 0.0f);
-                poseStack.scale(0.72f, 0.72f, 0.72f);
+                poseStack.translate(currentX, topArmor, 0.0f);
+                // ИСПРАВЛЕНО: Увеличили размер иконок на 5% (с 0.72f до 0.77f)
+                poseStack.scale(0.77f, 0.77f, 0.77f);
                 
                 graphics.renderItem(armorStack, 0, 0);
                 graphics.renderItemDecorations(mc.font, armorStack, 0, 0);
                 
                 poseStack.popPose();
-                currentX -= 16;
+                // ИСПРАВЛЕНО: Шаг увеличен до 24 пикселей, чтобы растянуть на всю длину панели
+                currentX += 24; 
             }
         }
+
+        // 2. ОТРИСОВКА ТЕКСТА СЫТОСТИ (SATURATION)
+        float saturation = mc.player.getFoodData().getSaturationLevel();
+        // Форматируем до одного знака после запятой (например: "14.5")
+        String satText = String.format("%.1f", saturation); 
+        
+        // Координаты текста ровно по центру над шкалой еды
+        int satX = screenWidth / 2 + 50; 
+        int satY = screenHeight - 48; 
+        
+        // Рисуем текст сытости золотым цветом с красивой черной тенью
+        graphics.drawString(mc.font, satText, satX, satY, 0xFFFF55, true);
     }
 }
 
