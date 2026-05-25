@@ -19,7 +19,7 @@ import org.lwjgl.glfw.GLFW;
 public class MyMod {
     private static boolean wasClicking = false;
     private static boolean wasKeyKDown = false;
-    private static boolean wasKeyJDown = false; // Отдельный триггер для J
+    private static boolean wasKeyJDown = false;
 
     public MyMod() {
         NeoForge.EVENT_BUS.register(this);
@@ -61,14 +61,14 @@ public class MyMod {
 
         long windowHandle = mc.getWindow().getWindow();
         
-        // ОБРАБОТКА НАЖАТИЯ НА КЛАВИШУ К (Правая рука)
+        // ОБРАБОТКА КЛАВИШИ К (Только для меню правой руки)
         boolean isKDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_K) == GLFW.GLFW_PRESS;
         if (isKDown && !wasKeyKDown && mc.screen == null) {
             mc.setScreen(new RightConfigScreen()); 
         }
         wasKeyKDown = isKDown;
 
-        // ОБРАБОТКА НАЖАТИЯ НА КЛАВИШУ J (Левая рука)
+        // ОБРАБОТКА КЛАВИШИ J (Только для меню левой руки)
         boolean isJDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_J) == GLFW.GLFW_PRESS;
         if (isJDown && !wasKeyJDown && mc.screen == null) {
             mc.setScreen(new LeftConfigScreen()); 
@@ -81,22 +81,19 @@ public class MyMod {
         ItemStack itemStack = event.getItemStack();
         if (itemStack.isEmpty()) return;
 
-        String itemName = itemStack.getItem().toString().toLowerCase();
-        boolean isWeapon = itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe");
+        // ИСПРАВЛЕНО: Убрали проверку имени предмета (itemName.contains).
+        // Теперь настройки применяются вообще ко всем вещам в руках игрока.
+        PoseStack poseStack = event.getPoseStack();
         
-        if (isWeapon) {
-            PoseStack poseStack = event.getPoseStack();
-            
-            // ПРАВАЯ РУКА (MAIN_HAND) — Обычный размер 0.55f
-            if (event.getHand() == InteractionHand.MAIN_HAND) {
-                poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
-                poseStack.scale(0.55f, 0.55f, 0.55f);
-            } 
-            // ЛЕВАЯ РУКА (OFF_HAND) — Жестко уменьшена ровно в 2 раза относительно правой (0.275f)
-            else if (event.getHand() == InteractionHand.OFF_HAND) {
-                poseStack.translate(-0.315D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
-                poseStack.scale(0.275f, 0.275f, 0.275f);
-            }
+        // ПРАВАЯ РУКА (MAIN_HAND) — Обычный размер 0.55f, слушает только кнопки из меню K
+        if (event.getHand() == InteractionHand.MAIN_HAND) {
+            poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
+            poseStack.scale(0.55f, 0.55f, 0.55f);
+        } 
+        // ЛЕВАЯ РУКА (OFF_HAND) — Уменьшена ровно в 2 раза (0.275f), слушает только кнопки из меню J
+        else if (event.getHand() == InteractionHand.OFF_HAND) {
+            poseStack.translate(-0.315D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
+            poseStack.scale(0.275f, 0.275f, 0.275f);
         }
     }
 }
