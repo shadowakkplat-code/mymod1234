@@ -20,8 +20,10 @@ public class MyArmor {
         if (mc.screen != null || mc.player == null) return;
 
         GuiGraphics graphics = event.getGuiGraphics();
-        int screenWidth = event.getWindow().getGuiScaledWidth();
-        int screenHeight = event.getWindow().getGuiScaledHeight();
+        
+        // ИСПРАВЛЕНО: получаем размеры экрана через встроенные методы GuiGraphics
+        int screenWidth = graphics.guiWidth();
+        int screenHeight = graphics.guiHeight();
         
         int left = screenWidth / 2 + 91;
         int top = screenHeight - 49; 
@@ -55,7 +57,6 @@ public class MyArmor {
     }
 }
 
-// ==== ВОТ СЮДА ВСТАВЛЕН ИСПРАВЛЕННЫЙ ЭКРАН БЕЗ РАЗМЫТИЯ ====
 class ConfigScreen extends Screen {
     protected ConfigScreen() {
         super(Component.literal("Sword Config"));
@@ -63,7 +64,6 @@ class ConfigScreen extends Screen {
 
     @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // Оставляем обычное темное затемнение вместо размытия
         this.renderTransparentBackground(graphics);
     }
 
