@@ -28,11 +28,14 @@ public class MyMod {
     }
 
     @SubscribeEvent
-    public void onClientTick(ClientTickEvent.Post event) {
+    public void onClientTick(ClientTickEvent event) {
+        // Заменяем устаревший .Post на проверку фазы внутри события NeoForge 1.21.4
+        if (event.getPhase() != ClientTickEvent.Phase.END) return;
+        
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
 
-        // Полное отключение тряски рук/предметов на программном уровне в каждом тике клиента
+        // Жесткое гашение тиков урона для отключения тряски рук/предметов без мерцания
         if (mc.player.hurtTime > 0) {
             mc.player.hurtDuration = 0;
             mc.player.hurtTime = 0;
@@ -80,25 +83,21 @@ public class MyMod {
         if (itemStack.isEmpty()) return;
 
         String itemName = itemStack.getItem().toString().toLowerCase();
+        boolean isWeapon = itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe");
         
-        if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
+        if (isWeapon) {
             PoseStack poseStack = event.getPoseStack();
             
-            // ПРАВАЯ РУКА (MAIN_HAND)
             if (event.getHand() == InteractionHand.MAIN_HAND) {
+                // ПРАВАЯ РУКА
                 poseStack.translate(0.12D, (double)MyConfig.rightY, (double)MyConfig.rightZ); 
                 poseStack.scale(0.55f, 0.55f, 0.55f);
             } 
-            // ЛЕВАЯ РУКА (OFF_HAND) - Принудительное изолированное масштабирование
             else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // Сначала сильно смещаем её влево по оси X, чтобы компенсировать ванильное отзеркаливание
-                poseStack.translate(-0.45D, 0.0D, 0.0D);
-                
-                // Применяем кастомные координаты калибровки левой руки из MyConfig
+                // ЛЕВАЯ РУКА: Полная изоляция от правой руки
+                poseStack.translate(-0.45D, 0.0D, 0.0D); // Сдвиг влево от центра рендера
                 poseStack.translate(0.0D, (double)MyConfig.leftY, (double)MyConfig.leftZ); 
-                
-                // Делаем левую руку ровно в два раза меньше правой (0.275f от оригинала)
-                poseStack.scale(0.275f, 0.275f, 0.275f);
+                poseStack.scale(0.275f, 0.275f, 0.275f); // Уменьшена ровно в два раза
             }
         }
     }
