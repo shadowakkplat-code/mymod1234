@@ -1,84 +1,85 @@
 package com.example.mymod;
 
-import java.lang.reflect.Method;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 public class MyArmor {
     
-    // Исправлено: заменено на официальный RenderLevelStageEvent для NeoForge 1.21.4
     @SubscribeEvent
-    public void onRenderStage(net.neoforged.neoforge.client.event.RenderLevelStageEvent event) {
-        try {
-            // Рисуем в самой финальной стадии вывода 3D кадра мира на монитор
-            if (event.getStage().toString().contains("AFTER_LEVEL")) {
-                Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
-                Object mc = mcClass.getMethod("getInstance").invoke(null);
-                
-                if (mcClass.getField("screen").get(mc) != null) return;
-                Object player = mcClass.getField("player").get(mc);
-                
-                if (player != null) {
-                    Object window = mcClass.getMethod("getWindow").invoke(mc);
-                    int screenWidth = (int) window.getClass().getMethod("getGuiScaledWidth").invoke(window);
-                    int screenHeight = (int) window.getClass().getMethod("getGuiScaledHeight").invoke(window);
-                    
-                    // Получаем актуальный системный графический контекст
-                    Object graphics = mcClass.getField("gui").get(mc).getClass().getMethod("getGuiGraphics").invoke(mcClass.getField("gui").get(mc));
-                    
-                    int left = screenWidth / 2 + 91;
-                    int top = screenHeight - 49; // Точные координаты над полоской еды
-                    
-                    Class<?> esClass = Class.forName("net.minecraft.world.entity.EquipmentSlot");
-                    Object[] slots = {
-                        esClass.getField("FEET").get(null), esClass.getField("LEGS").get(null),
-                        esClass.getField("CHEST").get(null), esClass.getField("HEAD").get(null)
-                    };
-                    
-                    Class<?> isClass = Class.forName("net.minecraft.world.item.ItemStack");
-                    int currentX = left - 9;
+    public void onRenderGui(RenderGuiEvent.Post event) {
+        Minecraft mc = Minecraft.getInstance();
+        
+        if (mc.screen != null || mc.player == null) return;
 
-                    for (Object slot : slots) {
-                        Object armorStack = player.getClass().getMethod("getItemBySlot", esClass).invoke(player, slot);
-                        boolean isEmpty = (boolean) armorStack.getClass().getMethod("isEmpty").invoke(armorStack);
-                        
-                        if (!isEmpty) {
-                            Object pose = graphics.getClass().getMethod("pose").invoke(graphics);
-                            pose.getClass().getMethod("pushPose").invoke(pose);
-                            pose.getClass().getMethod("translate", float.class, float.class, float.class).invoke(pose, (float)currentX, (float)top, 0.0f);
-                            pose.getClass().getMethod("scale", float.class, float.class, float.class).invoke(pose, 0.72f, 0.72f, 0.72f);
-                            
-                            graphics.getClass().getMethod("renderItem", isClass, int.class, int.class).invoke(graphics, armorStack, 0, 0);
-                            pose.getClass().getMethod("popPose").invoke(pose);
-                            currentX -= 16;
-                        }
-                    }
-                }
+        GuiGraphics graphics = event.getGuiGraphics();
+        int screenWidth = event.getWindow().getGuiScaledWidth();
+        int screenHeight = event.getWindow().getGuiScaledHeight();
+        
+        int left = screenWidth / 2 + 91;
+        int top = screenHeight - 49; 
+        
+        EquipmentSlot[] slots = {
+            EquipmentSlot.FEET, 
+            EquipmentSlot.LEGS,
+            EquipmentSlot.CHEST, 
+            EquipmentSlot.HEAD
+        };
+        
+        int currentX = left - 9;
+
+        for (EquipmentSlot slot : slots) {
+            ItemStack armorStack = mc.player.getItemBySlot(slot);
+            
+            if (!armorStack.isEmpty()) {
+                PoseStack poseStack = graphics.pose();
+                poseStack.pushPose();
+                
+                poseStack.translate(currentX, top, 0.0f);
+                poseStack.scale(0.72f, 0.72f, 0.72f);
+                
+                graphics.renderItem(armorStack, 0, 0);
+                graphics.renderItemDecorations(mc.font, armorStack, 0, 0);
+                
+                poseStack.popPose();
+                currentX -= 16;
             }
-        } catch (Exception ignored) {}
+        }
     }
 }
 
-class ConfigScreen extends net.minecraft.client.gui.screens.Screen {
+// ==== ВОТ СЮДА ВСТАВЛЕН ИСПРАВЛЕННЫЙ ЭКРАН БЕЗ РАЗМЫТИЯ ====
+class ConfigScreen extends Screen {
     protected ConfigScreen() {
-        super(net.minecraft.network.chat.Component.literal("Sword Config"));
-    }
-
-    private void drawCustomButton(net.minecraft.client.gui.GuiGraphics g, String text, int x, int y, int w, int h, int mx, int my) {
-        try {
-            boolean hovered = mx >= x && mx <= x + w && my >= y && my <= y + h;
-            int color = hovered ? 0xEE777777 : 0xEE444444; // Делаем кнопки светлыми и яркими
-            
-            Class<?> rsClass = Class.forName("com.mojang.blaze3d.systems.RenderSystem");
-            rsClass.getMethod("enableBlend").invoke(null);
-            rsClass.getMethod("setShaderColor", float.class, float.class, float.class, float.class).invoke(null, 1.0f, 1.0f, 1.0f, 1.0f);
-            
-            g.fill(x, y, x + w, y + h, color);
-            g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, 0xFFFFFFFF);
-        } catch (Exception ignored) {}
+        super(Component.literal("Sword Config"));
     }
 
     @Override
-    public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        // Оставляем обычное темное затемнение вместо размытия
+        this.renderTransparentBackground(graphics);
+    }
+
+    private void drawCustomButton(GuiGraphics g, String text, int x, int y, int w, int h, int mx, int my) {
+        boolean hovered = mx >= x && mx <= x + w && my >= y && my <= y + h;
+        int color = hovered ? 0xEE777777 : 0xEE444444; 
+        
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        
+        g.fill(x, y, x + w, y + h, color);
+        g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, 0xFFFFFFFF);
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(this.font, "⚔ PvP Client - Calibration Menu ⚔", this.width / 2, this.height / 2 - 85, 0xFFFFFF);
         graphics.drawCenteredString(this.font, "Press ESC to return to game", this.width / 2, this.height / 2 + 95, 0xAAAAAA);
@@ -118,7 +119,9 @@ class ConfigScreen extends net.minecraft.client.gui.screens.Screen {
                     return true;
                 }
                 else if (my >= cy + 65 && my <= cy + 85) {
-                    this.minecraft.setScreen(null);
+                    if (this.minecraft != null) {
+                        this.minecraft.setScreen(null);
+                    }
                     return true;
                 }
             }
