@@ -2,7 +2,6 @@ package com.example.mymod;
 
 import java.lang.reflect.Method;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.bus.api.Event;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -72,12 +71,11 @@ public class MyMod {
             }
         } catch (Exception ignored) {}
     }
-
     @SubscribeEvent
-    public void onRenderGui(Event event) {
-        if (!event.getClass().getName().contains("RenderGuiOverlayEvent")) return;
-        if (!event.getClass().getName().contains("Post")) return;
+    public void onRenderGui(net.neoforged.neoforge.client.event.RenderGuiOverlayEvent event) {
         try {
+            if (!event.getClass().getName().contains("Post")) return;
+            
             Method getOverlayMethod = event.getClass().getMethod("getOverlay");
             Object overlay = getOverlayMethod.invoke(event);
             String overlayId = overlay.getClass().getMethod("id").invoke(overlay).toString();
