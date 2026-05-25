@@ -11,21 +11,20 @@ public class MyDamage {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
-        // 1. Полностью убираем наклон камеры (Roll) во время анимации урона
+        // Если игрока бьют, принудительно гасим наклон камеры
         if (mc.player.hurtTime > 0) {
             event.setRoll(0.0f);
+            event.setPitch(event.getPitch());
+            event.setYaw(event.getYaw());
         }
     }
 
     @SubscribeEvent
-    public void onComputeFov(ViewportEvent.ComputeFov event) {
+    public void onRenderHandShake(ViewportEvent.RenderHandEvent event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return;
-
-        // 2. Дополнительно гасим резкие скачки поля зрения (FOV) при получении удара
-        if (mc.player.hurtTime > 0) {
-            // Оставляем FOV стабильным, игнорируя динамическое покачивание от урона
-            event.setFOV(event.getFOV()); 
+        if (mc.player != null && mc.player.hurtTime > 0) {
+            // Визуально обнуляем время урона на кадр рендера, чтобы руки не дергались
+            mc.player.hurtTime = 0;
         }
     }
 }
