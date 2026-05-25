@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -11,7 +12,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 public class MyHud {
-    // Кэшируем стандартную текстуру GUI для мгновенной отрисовки обводки
     private static final ResourceLocation GUI_ICONS = ResourceLocation.withDefaultNamespace("textures/gui/icons.png");
 
     @SubscribeEvent
@@ -27,7 +27,6 @@ public class MyHud {
         float saturation = mc.player.getFoodData().getSaturationLevel();
         if (saturation > 0) {
             RenderSystem.enableBlend();
-            // Накладываем золотистый фильтр поверх стандартных иконок голода
             RenderSystem.setShaderColor(1.0f, 0.75f, 0.0f, 0.8f); 
             
             int foodX = screenWidth / 2 + 91;
@@ -36,18 +35,16 @@ public class MyHud {
 
             for (int i = 0; i < Math.min(activeHearts, 10); i++) {
                 int x = foodX - i * 8 - 9;
-                // Рисуем пустую иконку "сердца/голода" из текстуры в качестве контура
-                graphics.blit(GUI_ICONS, x, foodY, 16, 27, 9, 9);
+                // ИСПРАВЛЕНО: Добавлен RenderType::guiTextured и размеры PNG (256, 256) под требования 1.21.4
+                graphics.blit(RenderType::guiTextured, GUI_ICONS, x, foodY, 16.0f, 27.0f, 9, 9, 256, 256);
             }
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         }
 
-        // 2. ОТРИСОВКА БРОНИ В ДРУГУЮ СТОРОНУ (Справа налево, увеличенная на 5%)
-        // Начальная координата сдвинута правее шкалы голода
+        // 2. ОТРИСОВКА БРОНИ В ДРУГУЮ СТОРОНУ (Справа налево)
         int leftArmor = screenWidth / 2 + 75; 
         int topArmor = screenHeight - 51; 
         
-        // Изменен порядок: Шлем -> Нагрудник -> Поножи -> Ботинки
         EquipmentSlot[] slots = {
             EquipmentSlot.HEAD,
             EquipmentSlot.CHEST,
@@ -71,7 +68,6 @@ public class MyHud {
                 graphics.renderItemDecorations(mc.font, armorStack, 0, 0);
                 
                 poseStack.popPose();
-                // Сдвигаем ВЛЕВО (-24), чтобы иконки выстраивались справа налево
                 currentX -= 24; 
             }
         }
