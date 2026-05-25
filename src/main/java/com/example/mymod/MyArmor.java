@@ -1,14 +1,12 @@
 package com.example.mymod;
 
-import com.example.mymod.left.LeftHandConfig;
-import com.example.mymod.right.RightHandConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class MyArmor {
-    // Контейнер для ConfigScreen.
+    // Контейнер класса
 }
 
 class ConfigScreen extends Screen {
@@ -70,42 +68,42 @@ class ConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            // Клики ЛЕВОЙ РУКИ (Изменяют LeftHandConfig)
+            // КЛИКИ ЛЕВОЙ РУКИ (Изменяют MyConfig.left)
             if (mx >= cxLeft && mx <= cxLeft + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
-                    LeftHandConfig.leftY += 0.05f;
+                    MyConfig.leftY += 0.05f;
                     return true;
                 }
                 else if (my >= cy - 35 && my <= cy - 15) {
-                    LeftHandConfig.leftY -= 0.05f;
+                    MyConfig.leftY -= 0.05f;
                     return true;
                 }
                 else if (my >= cy && my <= cy + 20) {
-                    LeftHandConfig.leftZ -= 0.05f;
+                    MyConfig.leftZ -= 0.05f;
                     return true;
                 }
                 else if (my >= cy + 25 && my <= cy + 45) {
-                    LeftHandConfig.leftZ += 0.05f;
+                    MyConfig.leftZ += 0.05f;
                     return true;
                 }
             }
             
-            // Клики ПРАВОЙ РУКИ (Изменяют RightHandConfig)
+            // КЛИКИ ПРАВОЙ РУКИ (Изменяют MyConfig.right)
             if (mx >= cxRight && mx <= cxRight + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
-                    RightHandConfig.rightY += 0.05f;
+                    MyConfig.rightY += 0.05f;
                     return true;
                 }
                 else if (my >= cy - 35 && my <= cy - 15) {
-                    RightHandConfig.rightY -= 0.05f;
+                    MyConfig.rightY -= 0.05f;
                     return true;
                 }
                 else if (my >= cy && my <= cy + 20) {
-                    RightHandConfig.rightZ -= 0.05f;
+                    MyConfig.rightZ -= 0.05f;
                     return true;
                 }
                 else if (my >= cy + 25 && my <= cy + 45) {
-                    RightHandConfig.rightZ += 0.05f;
+                    MyConfig.rightZ += 0.05f;
                     return true;
                 }
             }
