@@ -1,6 +1,5 @@
 package com.example.mymod;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
@@ -27,7 +26,6 @@ public class MyMod {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyArmor());
-        // Зарегистрировали новый оптимизированный файл HUD интерфейса
         NeoForge.EVENT_BUS.register(new MyHud()); 
     }
 
@@ -82,7 +80,7 @@ public class MyMod {
         String itemName = itemStack.getItem().toString().toLowerCase();
         
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
-            RenderSystem.setupTextureBlurMipmap(false, false);
+            // ИСПРАВЛЕНО: Удалено размытие, несовместимое со встроенным движком Minecraft 1.21.4
 
             PoseStack poseStack = event.getPoseStack();
             poseStack.pushPose();
