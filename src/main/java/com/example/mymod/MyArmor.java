@@ -44,11 +44,13 @@ class ConfigScreen extends Screen {
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА  ]", cxLeft + 50, cy - 80, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 80, 0xFF5555);
 
+        // Кнопки ЛЕВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (Л)", cxLeft, cy + 25, 100, 20, mouseX, mouseY);
         
+        // Кнопки ПРАВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 60, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy, 100, 20, mouseX, mouseY);
@@ -66,46 +68,49 @@ class ConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            if (mx >= cxLeft && mx <= cxLeft + 100) {
-                if (my >= cy - 60 && my <= cy - 40) {
+            // ИЗОЛИРОВАННАЯ ОБРАБОТКА КЛИКОВ ЛЕВОЙ РУКИ (Строго левая сторона экрана)
+            if (mx >= cxLeft && mx < cxLeft + 100) {
+                if (my >= cy - 60 && my < cy - 40) {
                     LeftHandConfig.leftY += 0.05f;
                     return true;
                 }
-                else if (my >= cy - 35 && my <= cy - 15) {
+                if (my >= cy - 35 && my < cy - 15) {
                     LeftHandConfig.leftY -= 0.05f;
                     return true;
                 }
-                else if (my >= cy && my <= cy + 20) {
+                if (my >= cy && my < cy + 20) {
                     LeftHandConfig.leftZ -= 0.05f;
                     return true;
                 }
-                else if (my >= cy + 25 && my <= cy + 45) {
+                if (my >= cy + 25 && my < cy + 45) {
                     LeftHandConfig.leftZ += 0.05f;
                     return true;
                 }
             }
             
-            if (mx >= cxRight && mx <= cxRight + 100) {
-                if (my >= cy - 60 && my <= cy - 40) {
+            // ИЗОЛИРОВАННАЯ ОБРАБОТКА КЛИКОВ ПРАВОЙ РУКИ (Строго правая сторона экрана)
+            if (mx >= cxRight && mx < cxRight + 100) {
+                if (my >= cy - 60 && my < cy - 40) {
                     RightHandConfig.rightY += 0.05f;
                     return true;
                 }
-                else if (my >= cy - 35 && my <= cy - 15) {
+                if (my >= cy - 35 && my < cy - 15) {
                     RightHandConfig.rightY -= 0.05f;
                     return true;
                 }
-                else if (my >= cy && my <= cy + 20) {
+                if (my >= cy && my < cy + 20) {
                     RightHandConfig.rightZ -= 0.05f;
                     return true;
                 }
-                else if (my >= cy + 25 && my <= cy + 45) {
+                if (my >= cy + 25 && my < cy + 45) {
                     RightHandConfig.rightZ += 0.05f;
                     return true;
                 }
             }
             
+            // ОБРАБОТКА КНОПКИ ЗАКРЫТЬ
             int closeX = this.width / 2 - 50;
-            if (mx >= closeX && mx <= closeX + 100 && my >= cy + 65 && my <= cy + 85) {
+            if (mx >= closeX && mx < closeX + 100 && my >= cy + 65 && my < cy + 85) {
                 if (this.minecraft != null) {
                     this.minecraft.setScreen(null);
                 }
