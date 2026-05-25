@@ -20,7 +20,7 @@ public class MyMod {
     private static boolean wasClicking = false;
     private static boolean wasKeyKDown = false;
     
-    // Переменные для ПРАВОЙ руки
+    // Переменные калибровки для ПРАВОЙ руки
     public static float swordY = 0.10f;
     public static float swordZ = -0.45f;
 
@@ -28,7 +28,6 @@ public class MyMod {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyHud()); 
-        // Зарегистрировали отключение тряски от урона
         NeoForge.EVENT_BUS.register(new MyDamage()); 
     }
 
@@ -85,21 +84,19 @@ public class MyMod {
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
             
+            // ИСПРАВЛЕНО: Убрали мешающие pushPose/popPose, которые моментально сбрасывали наши координаты
             if (event.getHand() == InteractionHand.MAIN_HAND) {
-                // ПРАВАЯ РУКА: Обычный размер (0.55f), управление от правых кнопок
-                poseStack.pushPose();
+                // ПРАВАЯ РУКА: Обычный масштаб вашего клиента (0.55f)
                 poseStack.scale(0.55f, 0.55f, 0.55f);
                 poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
-                poseStack.popPose();
             } 
             else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // ЛЕВАЯ РУКА: Полная изоляция через push/pop матрицы
-                poseStack.pushPose();
-                // Уменьшаем модель ровно в 2 раза от правой (0.275f)
+                // ЛЕВАЯ РУКА: Уменьшена ровно в 2 раза относительно правой (0.275f)
                 poseStack.scale(0.275f, 0.275f, 0.275f);
-                // Применяем исключительно левые переменные!
-                poseStack.translate(-0.35D, (double)ConfigScreen.leftY, (double)ConfigScreen.leftZ); 
-                poseStack.popPose();
+                
+                // Изменяем координаты на основе независимых переменных из ConfigScreen.
+                // Множитель -0.24D компенсирует внутреннее ванильное отзеркаливание OFF_HAND по X.
+                poseStack.translate(-0.24D, (double)ConfigScreen.leftY, (double)ConfigScreen.leftZ); 
             }
         }
     }
