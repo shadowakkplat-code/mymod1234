@@ -2,6 +2,8 @@ package com.example.mymod;
 
 import java.lang.reflect.Method;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -9,14 +11,19 @@ import net.neoforged.neoforge.common.NeoForge;
 public class MyMod {
     private static boolean wasClicking = false;
     
-    // Динамические настройки положения меча
+    // Глобальные переменные калибровки меча
     public static float swordY = 0.10f;
     public static float swordZ = -0.45f;
 
-    public MyMod() {
+    // Конструктор мода с автоматическим подключением к Mod Event Bus (шина NeoForge 1.21.4)
+    public MyMod(ModContainer container, IEventBus modBus) {
+        // 1. Регистрируем мод в общей шине событий (для тиков игрока и рук)
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
+        
+        // 2. ХАК: Регистрируем модуль брони и меню СРАЗУ в двух шинах, чтобы игра их точно увидела
         NeoForge.EVENT_BUS.register(new MyArmor());
+        modBus.register(new MyArmor());
     }
 
     @SubscribeEvent
@@ -81,7 +88,7 @@ public class MyMod {
         } catch (Exception ignored) {}
     }
 
-    // Создаем кнопку в меню паузы по новым стандартам через фабрику Button.builder()
+    // Ловим открытие меню ESC через двойную проверку шин событий
     @SubscribeEvent
     public void onScreenInit(net.neoforged.neoforge.client.event.ScreenEvent.Init.Post event) {
         try {
@@ -92,9 +99,8 @@ public class MyMod {
                 Class<?> componentClass = Class.forName("net.minecraft.network.chat.Component");
                 Object buttonText = componentClass.getMethod("literal", String.class).invoke(null, "⚔ PvP Mod Config");
                 
-                // Используем Button.builder() для обхода ошибок типизации и компиляции
                 Class<?> buttonClass = Class.forName("net.minecraft.client.gui.components.Button");
-                Object builder = buttonClass.getMethod("builder", componentClass, buttonClass.getDeclaredClasses()[0]).invoke(null, buttonText, (net.minecraft.client.gui.components.Button.OnPress) b -> {
+                Object builder = buttonClass.getMethod("builder", componentClass, buttonClass.getDeclaredClasses()).invoke(null, buttonText, (net.minecraft.client.gui.components.Button.OnPress) b -> {
                     try {
                         Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
                         Object mc = mcClass.getMethod("getInstance").invoke(null);
@@ -102,7 +108,6 @@ public class MyMod {
                     } catch (Exception ignored) {}
                 });
                 
-                // Указываем размеры кнопки в левом верхнем углу (X=10, Y=10, W=110, H=20)
                 builder.getClass().getMethod("bounds", int.class, int.class, int.class, int.class).invoke(builder, 10, 10, 110, 20);
                 Object pvpButton = builder.getClass().getMethod("build").invoke(builder);
                 
