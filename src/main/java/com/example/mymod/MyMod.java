@@ -77,21 +77,21 @@ public class MyMod {
 
         String itemName = itemStack.getItem().toString().toLowerCase();
         
-        // Применяем настройки ко ВСЕМ мечам, топорам и киркам
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
             
-            // 100% Точное разделение по типу руки, которая рендерится в данный момент события
+            // Проверяем конкретный тип руки через геттер события без посредников
             if (event.getHand() == InteractionHand.MAIN_HAND) {
-                // ПРАВАЯ РУКА
+                // ПРАВАЯ РУКА: Масштаб 0.55f, слушает MyConfig.rightY и rightZ
                 poseStack.scale(0.55f, 0.55f, 0.55f);
                 poseStack.translate(0.12D, (double)MyConfig.rightY, (double)MyConfig.rightZ); 
             } 
             else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // ЛЕВАЯ РУКА
+                // ЛЕВАЯ РУКА: Уменьшена в 2 раза (0.275f), слушает MyConfig.leftY и leftZ
                 poseStack.scale(0.275f, 0.275f, 0.275f);
-                // Множитель -0.24D нужен для компенсации зеркальности левой руки в Minecraft
-                poseStack.translate(-0.24D, (double)MyConfig.leftY, (double)MyConfig.leftZ); 
+                
+                // Смещаем по X влево (-0.35D), чтобы рука визуально ушла в левую часть экрана и управлялась отдельно
+                poseStack.translate(-0.35D, (double)MyConfig.leftY, (double)MyConfig.leftZ); 
             }
         }
     }
