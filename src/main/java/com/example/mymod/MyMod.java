@@ -25,7 +25,7 @@ public class MyMod {
     public MyMod() {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
-        // Ошибка исправлена: пустой класс MyArmor больше не регистрируется в шине событий
+        NeoForge.EVENT_BUS.register(new MyArmor());
         NeoForge.EVENT_BUS.register(new MyHud()); 
     }
 
@@ -81,10 +81,9 @@ public class MyMod {
         
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
-            poseStack.pushPose();
+            // ИСПРАВЛЕНО: Убрали pushPose/popPose. Теперь изменения масштаба и координат применяются к руке напрямую!
             poseStack.scale(0.55f, 0.55f, 0.55f);
             poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
-            poseStack.popPose();
         }
     }
 }
