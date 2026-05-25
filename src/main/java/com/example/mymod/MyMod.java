@@ -10,12 +10,9 @@ public class MyMod {
     private static boolean wasClicking = false;
 
     public MyMod() {
-        // Регистрируем главный класс мода
         NeoForge.EVENT_BUS.register(this);
-        // Подключаем три других модуля, которые лежат в этой же папке
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyArmor());
-        NeoForge.EVENT_BUS.register(new MyFood());
     }
 
     @SubscribeEvent
@@ -60,6 +57,22 @@ public class MyMod {
                     }
                 }
                 wasClicking = isDown;
+            }
+        } catch (Exception ignored) {}
+    }
+
+    // Уменьшение мечей в руках ровно в 2.5 раза (масштаб 0.4 от оригинала)
+    @SubscribeEvent
+    public void onRenderHand(net.neoforged.neoforge.client.event.RenderHandEvent event) {
+        try {
+            Object itemStack = event.getItemStack();
+            String itemName = itemStack.getClass().getMethod("getItem").invoke(itemStack).toString();
+            
+            if (itemName.contains("sword") || itemName.contains("Sword")) {
+                com.mojang.blaze3d.vertex.PoseStack poseStack = event.getPoseStack();
+                // Сжимаем до 40% (уменьшение в 2.5 раза) и немного смещаем для идеального обзора
+                poseStack.scale(0.4f, 0.4f, 0.4f);
+                poseStack.translate(0.15D, -0.1D, 0.0D);
             }
         } catch (Exception ignored) {}
     }
