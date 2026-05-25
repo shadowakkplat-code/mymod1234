@@ -4,46 +4,45 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 public class MyHud {
-    private static final ResourceLocation GUI_ICONS = ResourceLocation.withDefaultNamespace("textures/gui/icons.png");
 
+    // Используем Pre-ивент, чтобы перехватить цвет ДО того, как игра нарисует полоску опыта
     @SubscribeEvent
-    public void onRenderGui(RenderGuiEvent.Post event) {
+    public void onRenderGuiPre(RenderGuiEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.screen != null || mc.player == null || mc.options.hideGui) return;
+
+        // Включаем КРАСНЫЙ фильтр. Он окрасит шкалу опыта и уровень в красный цвет
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    // Используем Post-ивент, чтобы вернуть нормальный цвет и нарисовать увеличенную броню
+    @SubscribeEvent
+    public void onRenderGuiPost(RenderGuiEvent.Post event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.screen != null || mc.player == null || mc.options.hideGui) {
+            // Обязательно сбрасываем цвет, чтобы весь остальной мир не стал красным
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            return;
+        }
+
+        // Возвращаем стандартный белый цвет для интерфейса (меню, чат и т.д.)
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         GuiGraphics graphics = event.getGuiGraphics();
         int screenWidth = graphics.guiWidth();
         int screenHeight = graphics.guiHeight();
 
-        // 1. КРАСНАЯ ОБВОДКА ШКАЛЫ ЕДЫ (СЫТОСТЬ)
-        float saturation = mc.player.getFoodData().getSaturationLevel();
-        if (saturation > 0) {
-            RenderSystem.enableBlend();
-            // ИСПРАВЛЕНО: Чистый красный цвет фильтра для обводки
-            RenderSystem.setShaderColor(1.0f, 0.0f, 0.0f, 1.0f); 
-            
-            int foodX = screenWidth / 2 + 91;
-            int foodY = screenHeight - 39;
-            int activeHearts = (int) Math.ceil(saturation / 2.0f);
+        // [ИСПРАВЛЕНО]: Код обводки сытости (Saturation) полностью удален отсюда
 
-            for (int i = 0; i < Math.min(activeHearts, 10); i++) {
-                int x = foodX - i * 8 - 9;
-                graphics.blit(RenderType::guiTextured, GUI_ICONS, x, foodY, 16.0f, 27.0f, 9, 9, 256, 256);
-            }
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        }
-
-        // 2. УВЕЛИЧЕННАЯ БРОНЯ (Справа налево, без соприкосновения)
+        // ОТРИСОВКА УВЕЛИЧЕННОЙ БРОНИ (Справа налево, без соприкосновения)
         int leftArmor = screenWidth / 2 + 75; 
-        // ИСПРАВЛЕНО: Сдвинули на 3 пикселя выше (-54 вместо -51), чтобы крупные иконки не задевали еду
         int topArmor = screenHeight - 54; 
         
         EquipmentSlot[] slots = {
@@ -63,7 +62,6 @@ public class MyHud {
                 poseStack.pushPose();
                 
                 poseStack.translate(currentX, topArmor, 0.0f);
-                // ИСПРАВЛЕНО: Сделали иконки еще чуть больше, но безопасно для интерфейса
                 poseStack.scale(0.82f, 0.82f, 0.82f);
                 
                 graphics.renderItem(armorStack, 0, 0);
