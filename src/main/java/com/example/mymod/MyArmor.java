@@ -6,7 +6,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class MyArmor {
-    // Этот класс теперь отвечает только за вызов меню. Отрисовка HUD перенесена в MyHud.java
+    // Данный класс используется как контейнер для ConfigScreen. Отрисовка HUD вынесена в MyHud.java
 }
 
 class ConfigScreen extends Screen {
@@ -34,7 +34,9 @@ class ConfigScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         
-        graphics.drawCenteredString(this.font, "-> PvP Клиент - Меню калибровки <-", this.width / 2, this.height / 2 - 85, 0xFFFFFF);
+        // ИСПРАВЛЕНО: Строка с верхним заголовком полностью удалена!
+        
+        // Нижняя подсказка для удобства оставлена
         graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 95, 0xAAAAAA);
         
         int cx = this.width / 2 - 50;
