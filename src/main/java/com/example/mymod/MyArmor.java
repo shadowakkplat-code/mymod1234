@@ -6,12 +6,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class MyArmor {
-    // Данный класс используется как контейнер для ConfigScreen. Отрисовка HUD вынесена в MyHud.java
 }
 
 class ConfigScreen extends Screen {
     protected ConfigScreen() {
-        super(Component.literal("Настройка меча"));
+        super(Component.literal("Настройка рук"));
     }
 
     @Override
@@ -34,19 +33,31 @@ class ConfigScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         
-        // ИСПРАВЛЕНО: Строка с верхним заголовком полностью удалена!
+        // Подсказка снизу экрана
+        graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 105, 0xAAAAAA);
         
-        // Нижняя подсказка для удобства оставлена
-        graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 95, 0xAAAAAA);
-        
-        int cx = this.width / 2 - 50;
         int cy = this.height / 2;
+        int cxLeft = this.width / 2 - 120;  // Позиция кнопок для ЛЕВОЙ РУКИ (слева)
+        int cxRight = this.width / 2 + 20;  // Позиция кнопок для ПРАВОЙ РУКИ (справа)
         
-        drawCustomButton(graphics, "^ Выше", cx, cy - 60, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "v Ниже", cx, cy - 35, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "-> Дальше", cx, cy, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "<- Ближе", cx, cy + 25, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "[x] Закрыть", cx, cy + 65, 100, 20, mouseX, mouseY);
+        // Заголовки половин экрана
+        graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", cxLeft + 50, cy - 80, 0x55FF55);
+        graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 80, 0xFF5555);
+
+        // 1 ПОЛОВИНА: Кнопки управления ЛЕВОЙ РУКОЙ
+        drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 60, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 35, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "<- Ближе (Л)", cxLeft, cy + 25, 100, 20, mouseX, mouseY);
+        
+        // 2 ПОЛОВИНА: Кнопки управления ПРАВОЙ РУКОЙ
+        drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 60, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 35, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "<- Ближе (П)", cxRight, cy + 25, 100, 20, mouseX, mouseY);
+        
+        // Общая кнопка закрытия по центру в самом низу
+        drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 65, 100, 20, mouseX, mouseY);
         
         super.render(graphics, mouseX, mouseY, partialTick);
     }
@@ -54,10 +65,32 @@ class ConfigScreen extends Screen {
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
         if (button == 0) {
-            int cx = this.width / 2 - 50;
             int cy = this.height / 2;
+            int cxLeft = this.width / 2 - 120;
+            int cxRight = this.width / 2 + 20;
             
-            if (mx >= cx && mx <= cx + 100) {
+            // ОБРАБОТКА НАЖАТИЙ НА КНОПКИ ЛЕВОЙ РУКИ (Левая половина)
+            if (mx >= cxLeft && mx <= cxLeft + 100) {
+                if (my >= cy - 60 && my <= cy - 40) {
+                    MyMod.leftSwordY += 0.05f;
+                    return true;
+                }
+                else if (my >= cy - 35 && my <= cy - 15) {
+                    MyMod.leftSwordY -= 0.05f;
+                    return true;
+                }
+                else if (my >= cy && my <= cy + 20) {
+                    MyMod.leftSwordZ -= 0.05f;
+                    return true;
+                }
+                else if (my >= cy + 25 && my <= cy + 45) {
+                    MyMod.leftSwordZ += 0.05f;
+                    return true;
+                }
+            }
+            
+            // ОБРАБОТКА НАЖАТИЙ НА КНОПКИ ПРАВОЙ РУКИ (Правая половина)
+            if (mx >= cxRight && mx <= cxRight + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
                     MyMod.swordY += 0.05f;
                     return true;
@@ -74,12 +107,15 @@ class ConfigScreen extends Screen {
                     MyMod.swordZ += 0.05f;
                     return true;
                 }
-                else if (my >= cy + 65 && my <= cy + 85) {
-                    if (this.minecraft != null) {
-                        this.minecraft.setScreen(null);
-                    }
-                    return true;
+            }
+            
+            // КНОПКА ЗАКРЫТЬ
+            int closeX = this.width / 2 - 50;
+            if (mx >= closeX && mx <= closeX + 100 && my >= cy + 65 && my <= cy + 85) {
+                if (this.minecraft != null) {
+                    this.minecraft.setScreen(null);
                 }
+                return true;
             }
         }
         return super.mouseClicked(mx, my, button);
