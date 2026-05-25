@@ -10,6 +10,7 @@ public class MyLeftHand {
 
     @SubscribeEvent
     public void onRenderLeftHand(RenderHandEvent event) {
+        // ИСПРАВЛЕНО: Этот файл перехватывает ТОЛЬКО левую руку
         if (event.getHand() != InteractionHand.OFF_HAND) return;
 
         ItemStack itemStack = event.getItemStack();
@@ -19,10 +20,10 @@ public class MyLeftHand {
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
             PoseStack poseStack = event.getPoseStack();
             
-            // УМЕНЬШЕНО В 2 РАЗА: 0.275f
+            // Уменьшаем ровно в 2 раза
             poseStack.scale(0.275f, 0.275f, 0.275f);
             
-            // ИСПРАВЛЕНО: Ссылаемся на переменные калибровки из ConfigScreen
+            // Применяем полностью изолированные координаты из ConfigScreen
             poseStack.translate(-0.24D, (double)ConfigScreen.leftY, (double)ConfigScreen.leftZ);
         }
     }
