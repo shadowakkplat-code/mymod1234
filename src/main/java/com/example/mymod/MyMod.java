@@ -25,7 +25,7 @@ public class MyMod {
     public MyMod() {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
-        NeoForge.EVENT_BUS.register(new MyArmor());
+        // Ошибка исправлена: пустой класс MyArmor больше не регистрируется в шине событий
         NeoForge.EVENT_BUS.register(new MyHud()); 
     }
 
@@ -80,8 +80,6 @@ public class MyMod {
         String itemName = itemStack.getItem().toString().toLowerCase();
         
         if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
-            // ИСПРАВЛЕНО: Удалено размытие, несовместимое со встроенным движком Minecraft 1.21.4
-
             PoseStack poseStack = event.getPoseStack();
             poseStack.pushPose();
             poseStack.scale(0.55f, 0.55f, 0.55f);
