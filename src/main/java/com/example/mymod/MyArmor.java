@@ -43,7 +43,7 @@ class ConfigScreen extends Screen {
         int cxLeft = this.width / 2 - 120;  
         int cxRight = this.width / 2 + 20;  
         
-        graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА (0.5x) ]", cxLeft + 50, cy - 80, 0x55FF55);
+        graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА  ]", cxLeft + 50, cy - 80, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 80, 0xFF5555);
 
         // Кнопки ЛЕВОЙ РУКИ
