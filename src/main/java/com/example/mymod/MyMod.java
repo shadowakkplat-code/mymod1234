@@ -1,7 +1,5 @@
 package com.example.mymod;
 
-import com.example.mymod.left.LeftHandRenderer;
-import com.example.mymod.right.RightHandRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -77,7 +75,6 @@ public class MyMod {
         boolean isWeapon = itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe");
         
         if (isWeapon) {
-            // Передаем обработку рендеринга в новые изолированные подпакеты
             RightHandRenderer.render(event, itemStack);
             LeftHandRenderer.render(event, itemStack);
         }
