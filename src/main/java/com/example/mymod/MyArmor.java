@@ -4,15 +4,16 @@ import java.lang.reflect.Method;
 import net.neoforged.bus.api.SubscribeEvent;
 
 public class MyArmor {
+    // Переключено на .Pre для гарантированного вывода текстур на экран
     @SubscribeEvent
-    public void onRenderArmor(net.neoforged.neoforge.client.event.RenderGuiLayerEvent.Post event) {
+    public void onRenderArmor(net.neoforged.neoforge.client.event.RenderGuiLayerEvent.Pre event) {
         try {
             Method getLayerMethod = event.getClass().getMethod("getLayer");
             Object layer = getLayerMethod.invoke(event);
             String name = layer.toString();
             
-            // Привязываемся к слою хотбара
-            if (name.contains("HOTBAR") || name.contains("hotbar")) {
+            // Ловим слой отрисовки еды или хотбара
+            if (name.contains("FOOD_LEVEL") || name.contains("food") || name.contains("HOTBAR") || name.contains("hotbar")) {
                 Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
                 Object mc = mcClass.getMethod("getInstance").invoke(null);
                 Object player = mcClass.getField("player").get(mc);
@@ -23,9 +24,9 @@ public class MyArmor {
                     int screenHeight = (int) window.getClass().getMethod("getGuiScaledHeight").invoke(window);
                     Object graphics = event.getGuiGraphics();
                     
-                    // Позиция ровно над полоской голода (правая часть экрана)
+                    // Координаты: ровно над полоской голода (справа над хотбаром)
                     int left = screenWidth / 2 + 91;
-                    int top = screenHeight - 53; // Высота над окорочками еды
+                    int top = screenHeight - 49; // Идеальная высота над едой
                     
                     Class<?> esClass = Class.forName("net.minecraft.world.entity.EquipmentSlot");
                     Object[] slots = {
@@ -43,17 +44,17 @@ public class MyArmor {
                         boolean isEmpty = (boolean) armorStack.getClass().getMethod("isEmpty").invoke(armorStack);
                         
                         if (!isEmpty) {
-                            // Отрисовка только чистой мини-иконки надетой брони
+                            // Отрисовка мини-иконки брони
                             Object pose = graphics.getClass().getMethod("pose").invoke(graphics);
                             pose.getClass().getMethod("pushPose").invoke(pose);
                             pose.getClass().getMethod("translate", float.class, float.class, float.class).invoke(pose, (float)currentX, (float)top, 0.0f);
-                            pose.getClass().getMethod("scale", float.class, float.class, float.class).invoke(pose, 0.75f, 0.75f, 0.75f);
+                            pose.getClass().getMethod("scale", float.class, float.class, float.class).invoke(pose, 0.70f, 0.70f, 0.70f); // Чуть уменьшаем иконки для аккуратности
                             
-                            // Выводим только иконку предмета на экран
+                            // Вызываем метод рендеринга предмета в интерфейсе
                             graphics.getClass().getMethod("renderItem", isClass, int.class, int.class).invoke(graphics, armorStack, 0, 0);
                             pose.getClass().getMethod("popPose").invoke(pose);
                             
-                            currentX -= 18; // Уменьшаем шаг, так как текста нет и иконки могут стоять компактнее
+                            currentX -= 16; // Компактный шаг для чистых иконок
                         }
                     }
                 }
