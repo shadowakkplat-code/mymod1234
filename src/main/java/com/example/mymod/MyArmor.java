@@ -5,11 +5,11 @@ import net.neoforged.bus.api.SubscribeEvent;
 
 public class MyArmor {
     
-    // СОВЕРШЕННО ДРУГОЙ СПОСОБ: Отрисовка брони через стадию рендеринга мира (невозможно скрыть)
+    // Исправлено: заменено на официальный RenderLevelStageEvent для NeoForge 1.21.4
     @SubscribeEvent
-    public void onRenderStage(net.neoforged.neoforge.client.event.RenderStageEvent event) {
+    public void onRenderStage(net.neoforged.neoforge.client.event.RenderLevelStageEvent event) {
         try {
-            // Рисуем в самой финальной стадии вывода кадра на монитор
+            // Рисуем в самой финальной стадии вывода 3D кадра мира на монитор
             if (event.getStage().toString().contains("AFTER_LEVEL")) {
                 Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
                 Object mc = mcClass.getMethod("getInstance").invoke(null);
@@ -63,13 +63,11 @@ class ConfigScreen extends net.minecraft.client.gui.screens.Screen {
         super(net.minecraft.network.chat.Component.literal("Sword Config"));
     }
 
-    // Исправленный метод отрисовки кнопок со сбросом цвета шейдера
     private void drawCustomButton(net.minecraft.client.gui.GuiGraphics g, String text, int x, int y, int w, int h, int mx, int my) {
         try {
             boolean hovered = mx >= x && mx <= x + w && my >= y && my <= y + h;
             int color = hovered ? 0xEE777777 : 0xEE444444; // Делаем кнопки светлыми и яркими
             
-            // Включаем прозрачность и принудительно сбрасываем цвета рендеринга в шейдере
             Class<?> rsClass = Class.forName("com.mojang.blaze3d.systems.RenderSystem");
             rsClass.getMethod("enableBlend").invoke(null);
             rsClass.getMethod("setShaderColor", float.class, float.class, float.class, float.class).invoke(null, 1.0f, 1.0f, 1.0f, 1.0f);
