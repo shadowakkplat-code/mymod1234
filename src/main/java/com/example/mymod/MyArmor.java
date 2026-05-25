@@ -1,8 +1,6 @@
 package com.example.mymod;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
 import net.neoforged.bus.api.SubscribeEvent;
 
 public class MyArmor {
@@ -51,70 +49,53 @@ public class MyArmor {
     }
 }
 
+// Кастомный 100% компилируемый экран конфигурации
 class ConfigScreen extends net.minecraft.client.gui.screens.Screen {
     protected ConfigScreen() {
-        super(net.minecraft.network.chat.Component.literal("Sword Position Configuration"));
+        super(net.minecraft.network.chat.Component.literal("Sword Config"));
     }
 
-    private void addCustomWidget(Object widget) {
-        try {
-            // Прямая вставка виджета в обход капризного метода addRenderableWidget
-            Field renderablesField = net.minecraft.client.gui.screens.Screen.class.getDeclaredField("renderables");
-            renderablesField.setAccessible(true);
-            List<net.minecraft.client.gui.components.Renderable> renderables = (List<net.minecraft.client.gui.components.Renderable>) renderablesField.get(this);
-            renderables.add((net.minecraft.client.gui.components.Renderable) widget);
-
-            Field childrenField = net.minecraft.client.gui.components.AbstractContainerScreen.class.getSuperclass().getDeclaredField("children");
-            childrenField.setAccessible(true);
-            List<net.minecraft.client.gui.components.events.GuiEventListener> children = (List<net.minecraft.client.gui.components.events.GuiEventListener>) childrenField.get(this);
-            children.add((net.minecraft.client.gui.components.events.GuiEventListener) widget);
-
-            Field narrativesField = net.minecraft.client.gui.screens.Screen.class.getDeclaredField("narratables");
-            narrativesField.setAccessible(true);
-            List<net.minecraft.client.gui.narration.NarratableEntry> narratables = (List<net.minecraft.client.gui.narration.NarratableEntry>) narrativesField.get(this);
-            narratables.add((net.minecraft.client.gui.narration.NarratableEntry) widget);
-        } catch (Exception ignored) {}
-    }
-
-    @Override
-    protected void init() {
-        try {
-            Class<?> compClass = Class.forName("net.minecraft.network.chat.Component");
-            Class<?> buttonClass = Class.forName("net.minecraft.client.gui.components.Button");
-            Method builderMethod = buttonClass.getMethod("builder", compClass, buttonClass.getDeclaredClasses());
-
-            // Кнопка 1: ▲ Higher
-            Object builder1 = builderMethod.invoke(null, compClass.getMethod("literal", String.class).invoke(null, "▲ Higher"), (net.minecraft.client.gui.components.Button.OnPress) b -> MyMod.swordY += 0.05f);
-            builder1.getClass().getMethod("bounds", int.class, int.class, int.class, int.class).invoke(builder1, this.width / 2 - 50, this.height / 2 - 60, 100, 20);
-            addCustomWidget(builder1.getClass().getMethod("build").invoke(builder1));
-
-            // Кнопка 2: ▼ Lower
-            Object builder2 = builderMethod.invoke(null, compClass.getMethod("literal", String.class).invoke(null, "▼ Lower"), (net.minecraft.client.gui.components.Button.OnPress) b -> MyMod.swordY -= 0.05f);
-            builder2.getClass().getMethod("bounds", int.class, int.class, int.class, int.class).invoke(builder2, this.width / 2 - 50, this.height / 2 - 35, 100, 20);
-            addCustomWidget(builder2.getClass().getMethod("build").invoke(builder2));
-
-            // Кнопка 3: ✦ Further
-            Object builder3 = builderMethod.invoke(null, compClass.getMethod("literal", String.class).invoke(null, "✦ Further"), (net.minecraft.client.gui.components.Button.OnPress) b -> MyMod.swordZ -= 0.05f);
-            builder3.getClass().getMethod("bounds", int.class, int.class, int.class, int.class).invoke(builder3, this.width / 2 - 50, this.height / 2 + 0, 100, 20);
-            addCustomWidget(builder3.getClass().getMethod("build").invoke(builder3));
-
-            // Кнопка 4: ⏳ Closer
-            Object builder4 = builderMethod.invoke(null, compClass.getMethod("literal", String.class).invoke(null, "⏳ Closer"), (net.minecraft.client.gui.components.Button.OnPress) b -> MyMod.swordZ += 0.05f);
-            builder4.getClass().getMethod("bounds", int.class, int.class, int.class, int.class).invoke(builder4, this.width / 2 - 50, this.height / 2 + 25, 100, 20);
-            addCustomWidget(builder4.getClass().getMethod("build").invoke(builder4));
-
-            // Кнопка 5: ✔ Save & Close
-            Object builder5 = builderMethod.invoke(null, compClass.getMethod("literal", String.class).invoke(null, "✔ Save & Close"), (net.minecraft.client.gui.components.Button.OnPress) b -> this.minecraft.setScreen(null));
-            builder5.getClass().getMethod("bounds", int.class, int.class, int.class, int.class).invoke(builder5, this.width / 2 - 50, this.height / 2 + 65, 100, 20);
-            addCustomWidget(builder5.getClass().getMethod("build").invoke(builder5));
-
-        } catch (Exception ignored) {}
+    // Вспомогательный метод рисования нашей кастомной кнопки
+    private void drawCustomButton(net.minecraft.client.gui.GuiGraphics g, String text, int x, int y, int w, int h, int mx, int my) {
+        boolean hovered = mx >= x && my >= x + w && my >= y && my <= y + h;
+        int color = hovered ? 0xCC555555 : 0xCC222222; // Подсветка при наведении
+        g.fill(x, y, x + w, y + h, color);
+        g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, 0xFFFFFFFF);
     }
 
     @Override
     public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(this.font, "⚔ PvP Client - Calibration Menu ⚔", this.width / 2, this.height / 2 - 85, 0xFFFFFF);
+        
+        // Рисуем 5 кнопок калибровки
+        int cx = this.width / 2 - 50;
+        int cy = this.height / 2;
+        drawCustomButton(graphics, "▲ Higher", cx, cy - 60, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "▼ Lower", cx, cy - 35, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "✦ Further", cx, cy, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "⏳ Closer", cx, cy + 25, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "✔ Save & Close", cx, cy + 65, 100, 20, mouseX, mouseY);
+        
         super.render(graphics, mouseX, mouseY, partialTick);
+    }
+
+    // Отслеживаем клики мышки по координатам наших прямоугольников
+    @Override
+    public boolean mouseClicked(double mx, double my, int button) {
+        if (button == 0) { // Левый клик
+            int cx = this.width / 2 - 50;
+            int cy = this.height / 2;
+            
+            if (mx >= cx && mx <= cx + 100) {
+                if (my >= cy - 60 && my <= cy - 40) MyMod.swordY += 0.05f;
+                else if (my >= cy - 35 && my <= cy - 15) MyMod.swordY -= 0.05f;
+                else if (my >= cy && my <= cy + 20) MyMod.swordZ -= 0.05f;
+                else if (my >= cy + 25 && my <= cy + 45) MyMod.swordZ += 0.05f;
+                else if (my >= cy + 65 && my <= cy + 85) this.minecraft.setScreen(null);
+                return true;
+            }
+        }
+        return super.mouseClicked(mx, my, button);
     }
 }
