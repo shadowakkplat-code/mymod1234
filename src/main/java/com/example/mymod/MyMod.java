@@ -63,14 +63,12 @@ public class MyMod {
 
         long windowHandle = mc.getWindow().getWindow();
         
-        // КЛАВИША К: Правая рука
         boolean isKDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_K) == GLFW.GLFW_PRESS;
         if (isKDown && !wasKeyKDown && mc.screen == null) {
             mc.setScreen(new RightConfigScreen()); 
         }
         wasKeyKDown = isKDown;
 
-        // КЛАВИША J: Левая рука
         boolean isJDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_J) == GLFW.GLFW_PRESS;
         if (isJDown && !wasKeyJDown && mc.screen == null) {
             mc.setScreen(new LeftConfigScreen()); 
@@ -88,21 +86,27 @@ public class MyMod {
 
         PoseStack poseStack = event.getPoseStack();
         
-        // Вычисляем физическую сторону руки (левая или правая)
         HumanoidArm mainArm = mc.player.getMainArm();
         HumanoidArm currentArm = (event.getHand() == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
         
-        // ИСПРАВЛЕНО: Мы убрали pushPose/popPose, чтобы масштаб доходил до предметов.
-        // Полная изоляция теперь достигается за счет точного разделения на логические блоки if/else.
         if (currentArm == HumanoidArm.RIGHT) {
-            // ПРАВАЯ СТОРОНА: Считывает только кнопки из меню K (RightHandConfig)
-            poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
+            // ПРАВАЯ РУКА: Открываем защитный изолированный стек
+            poseStack.pushPose();
+            
+            // Динамическое перемещение по всем ТРЕМ осям (X, Y, Z) из RightHandConfig
+            poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
+            
+            // ВАЖНО: Мы НЕ пишем здесь popPose(), давая ванильному коду завершить рендер с этой матрицей.
+            // Матрица закроется автоматически при завершении кадра руки, не влияя на левую руку.
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            // ЛЕВАЯ СТОРОНА: Считывает только кнопки из меню J (LeftHandConfig)
-            poseStack.translate(-0.315D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
-            poseStack.scale(0.275f, 0.275f, 0.275f); // Жесткое уменьшение ровно в 2 раза
+            // ЛЕВАЯ РУКА: Открываем отдельный защитный стек
+            poseStack.pushPose();
+            
+            // Динамическое перемещение по всем ТРЕМ осям (X, Y, Z) из LeftHandConfig
+            poseStack.translate((double)LeftHandConfig.leftX, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
+            poseStack.scale(0.275f, 0.275f, 0.275f); // Масштаб уменьшен ровно в 2 раза
         }
     }
 }
