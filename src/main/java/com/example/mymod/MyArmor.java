@@ -4,58 +4,47 @@ import java.lang.reflect.Method;
 import net.neoforged.bus.api.SubscribeEvent;
 
 public class MyArmor {
-    
-    // Используем официальное событие отрисовки слоев интерфейса для NeoForge 1.21.4
     @SubscribeEvent
-    public void onRenderGuiLayer(net.neoforged.neoforge.client.event.RenderGuiLayerEvent.Post event) {
+    public void onRenderGui(net.neoforged.neoforge.client.event.ScreenEvent.Render.Post event) {
         try {
-            Method getLayerMethod = event.getClass().getMethod("getLayer");
-            Object layer = getLayerMethod.invoke(event);
-            String layerName = layer.toString();
+            Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
+            Object mc = mcClass.getMethod("getInstance").invoke(null);
             
-            // Ловим момент, когда игра рисует шкалу еды (FOOD_LEVEL)
-            if (layerName.contains("FOOD_LEVEL") || layerName.contains("food")) {
-                Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
-                Object mc = mcClass.getMethod("getInstance").invoke(null);
-                Object player = mcClass.getField("player").get(mc);
+            // Рисуем ХУД только на чистом игровом экране (без открытых чатов и инвентарей)
+            if (mcClass.getField("screen").get(mc) != null) return;
+            Object player = mcClass.getField("player").get(mc);
+            
+            if (player != null) {
+                Object window = mcClass.getMethod("getWindow").invoke(mc);
+                int screenWidth = (int) window.getClass().getMethod("getGuiScaledWidth").invoke(window);
+                int screenHeight = (int) window.getClass().getMethod("getGuiScaledHeight").invoke(window);
+                Object graphics = event.getGuiGraphics();
                 
-                if (player != null) {
-                    Object window = mcClass.getMethod("getWindow").invoke(mc);
-                    int screenWidth = (int) window.getClass().getMethod("getGuiScaledWidth").invoke(window);
-                    int screenHeight = (int) window.getClass().getMethod("getGuiScaledHeight").invoke(window);
-                    Object graphics = event.getGuiGraphics();
-                    
-                    // Позиция ровно над вашими окорочками еды
-                    int left = screenWidth / 2 + 91;
-                    int top = screenHeight - 49;
-                    
-                    Class<?> esClass = Class.forName("net.minecraft.world.entity.EquipmentSlot");
-                    Object[] slots = {
-                        esClass.getField("FEET").get(null),
-                        esClass.getField("LEGS").get(null),
-                        esClass.getField("CHEST").get(null),
-                        esClass.getField("HEAD").get(null)
-                    };
-                    
-                    Class<?> isClass = Class.forName("net.minecraft.world.item.ItemStack");
-                    int currentX = left - 9;
+                int left = screenWidth / 2 + 91;
+                int top = screenHeight - 49; // Ровно над полоской еды
+                
+                Class<?> esClass = Class.forName("net.minecraft.world.entity.EquipmentSlot");
+                Object[] slots = {
+                    esClass.getField("FEET").get(null), esClass.getField("LEGS").get(null),
+                    esClass.getField("CHEST").get(null), esClass.getField("HEAD").get(null)
+                };
+                
+                Class<?> isClass = Class.forName("net.minecraft.world.item.ItemStack");
+                int currentX = left - 9;
 
-                    for (Object slot : slots) {
-                        Object armorStack = player.getClass().getMethod("getItemBySlot", esClass).invoke(player, slot);
-                        boolean isEmpty = (boolean) armorStack.getClass().getMethod("isEmpty").invoke(armorStack);
+                for (Object slot : slots) {
+                    Object armorStack = player.getClass().getMethod("getItemBySlot", esClass).invoke(player, slot);
+                    boolean isEmpty = (boolean) armorStack.getClass().getMethod("isEmpty").invoke(armorStack);
+                    
+                    if (!isEmpty) {
+                        Object pose = graphics.getClass().getMethod("pose").invoke(graphics);
+                        pose.getClass().getMethod("pushPose").invoke(pose);
+                        pose.getClass().getMethod("translate", float.class, float.class, float.class).invoke(pose, (float)currentX, (float)top, 0.0f);
+                        pose.getClass().getMethod("scale", float.class, float.class, float.class).invoke(pose, 0.72f, 0.72f, 0.72f);
                         
-                        if (!isEmpty) {
-                            // Отрисовка чистой мини-иконки надетой брони
-                            Object pose = graphics.getClass().getMethod("pose").invoke(graphics);
-                            pose.getClass().getMethod("pushPose").invoke(pose);
-                            pose.getClass().getMethod("translate", float.class, float.class, float.class).invoke(pose, (float)currentX, (float)top, 0.0f);
-                            pose.getClass().getMethod("scale", float.class, float.class, float.class).invoke(pose, 0.72f, 0.72f, 0.72f);
-                            
-                            graphics.getClass().getMethod("renderItem", isClass, int.class, int.class).invoke(graphics, armorStack, 0, 0);
-                            pose.getClass().getMethod("popPose").invoke(pose);
-                            
-                            currentX -= 16; // Компактный шаг для иконок
-                        }
+                        graphics.getClass().getMethod("renderItem", isClass, int.class, int.class).invoke(graphics, armorStack, 0, 0);
+                        pose.getClass().getMethod("popPose").invoke(pose);
+                        currentX -= 16;
                     }
                 }
             }
@@ -63,7 +52,6 @@ public class MyArmor {
     }
 }
 
-// Оставляем класс ConfigScreen без изменений в самом низу файла
 class ConfigScreen extends net.minecraft.client.gui.screens.Screen {
     protected ConfigScreen() {
         super(net.minecraft.network.chat.Component.literal("Sword Config"));
@@ -80,6 +68,7 @@ class ConfigScreen extends net.minecraft.client.gui.screens.Screen {
     public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(this.font, "⚔ PvP Client - Calibration Menu ⚔", this.width / 2, this.height / 2 - 85, 0xFFFFFF);
+        graphics.drawCenteredString(this.font, "Press ESC to return to game", this.width / 2, this.height / 2 + 95, 0xAAAAAA);
         
         int cx = this.width / 2 - 50;
         int cy = this.height / 2;
@@ -87,7 +76,7 @@ class ConfigScreen extends net.minecraft.client.gui.screens.Screen {
         drawCustomButton(graphics, "▼ Lower", cx, cy - 35, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "✦ Further", cx, cy, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "⏳ Closer", cx, cy + 25, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "✔ Save & Close", cx, cy + 65, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "✔ Close", cx, cy + 65, 100, 20, mouseX, mouseY);
         
         super.render(graphics, mouseX, mouseY, partialTick);
     }
