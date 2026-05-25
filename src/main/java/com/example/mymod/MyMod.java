@@ -94,41 +94,39 @@ public class MyMod {
         float swingProgress = event.getSwingProgress();
 
         if (currentArm == HumanoidArm.RIGHT) {
-            // ПРАВАЯ РУКА: Не отменяем ивент! Это возвращает ванильную анимацию еды/зелий
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
 
-            // ЕСЛИ ИГРОК БЬЕТ (swingProgress > 0), НАКЛАДЫВАЕМ КАСТOМНЫЕ PvP АНИМАЦИИ
             if (swingProgress > 0.0f) {
-                float f = Math.isFinite(swingProgress) ? (float) Math.sin((double) (swingProgress * (float) Math.PI)) : 0.0f;
+                // ИСПРАВЛЕНО: Заменили Math.isFinite на Float.isFinite
+                float f = Float.isFinite(swingProgress) ? (float) Math.sin((double) (swingProgress * (float) Math.PI)) : 0.0f;
                 
                 switch (RightHandConfig.swingMode) {
-                    case 1: // Прокрут (360 градусов вокруг оси)
-                        poseStack.rotateAround(Axis.ZP.rotationDegrees(swingProgress * 360.0f), 0.0f, 0.0f, 0.0f);
+                    case 1: // Прокрут (360 градусов)
+                        poseStack.mulPose(Axis.ZP.rotationDegrees(swingProgress * 360.0f));
                         break;
-                    case 2: // Олдскул 1.7 (Резкий рубящий блок-хит)
+                    case 2: // Олдскул 1.7
                         poseStack.translate(0.0D, (double)(f * 0.15F), 0.0D);
-                        poseStack.rotateAround(Axis.XP.rotationDegrees(-f * 30.0F), 1.0f, 0.0f, 0.0f);
+                        poseStack.mulPose(Axis.XP.rotationDegrees(-f * 30.0F));
                         break;
-                    case 3: // Короткий PvP-удар (Хит без провала меча под экран)
+                    case 3: // Короткий PvP-удар
                         poseStack.translate(0.0D, 0.0D, (double)(f * 0.1F));
                         break;
                     case 4: // Боковой взмах
-                        poseStack.rotateAround(Axis.YP.rotationDegrees(f * 40.0F), 0.0f, 1.0f, 0.0f);
+                        poseStack.mulPose(Axis.YP.rotationDegrees(f * 40.0F));
                         break;
                     case 5: // Снизу вверх
                         poseStack.translate(0.0D, (double)(f * 0.2F), 0.0D);
-                        poseStack.rotateAround(Axis.XP.rotationDegrees(f * 20.0F), 1.0f, 0.0f, 0.0f);
+                        poseStack.mulPose(Axis.XP.rotationDegrees(f * 20.0F));
                         break;
-                    case 6: // Тяжелый замах (Замедленный визуальный удар)
-                        poseStack.rotateAround(Axis.ZP.rotationDegrees(-f * 45.0F), 0.0f, 0.0f, 1.0f);
-                        poseStack.rotateAround(Axis.XP.rotationDegrees(-f * 15.0F), 1.0f, 0.0f, 0.0f);
+                    case 6: // Тяжелый замах
+                        poseStack.mulPose(Axis.ZP.rotationDegrees(-f * 45.0F));
+                        poseStack.mulPose(Axis.XP.rotationDegrees(-f * 15.0F));
                         break;
                 }
             }
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            // ЛЕВАЯ РУКА: Оставляем простую дефолтную изоляцию и уменьшение, чтобы не забивать экран
             poseStack.translate((double)LeftHandConfig.leftX, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
             poseStack.scale(0.275f, 0.275f, 0.275f);
         }
