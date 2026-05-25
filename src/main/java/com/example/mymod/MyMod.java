@@ -24,6 +24,7 @@ public class MyMod {
             Object level = mcClass.getField("level").get(mc);
             
             if (player != null && level != null) {
+                int tickCount = player.getClass().getField("tickCount").getInt(player);
                 Object options = mcClass.getField("options").get(mc);
                 Object keyAttack = options.getClass().getField("keyAttack").get(options);
                 boolean isDown = (boolean) keyAttack.getClass().getMethod("isDown").invoke(keyAttack);
@@ -61,18 +62,20 @@ public class MyMod {
         } catch (Exception ignored) {}
     }
 
-    // Уменьшение мечей в руках ровно в 2.5 раза (масштаб 0.4 от оригинала)
+    // Делаем инструменты крошечными (как на вашем скриншоте, но чуть побольше - масштаб 0.55)
     @SubscribeEvent
     public void onRenderHand(net.neoforged.neoforge.client.event.RenderHandEvent event) {
         try {
             Object itemStack = event.getItemStack();
             String itemName = itemStack.getClass().getMethod("getItem").invoke(itemStack).toString();
             
-            if (itemName.contains("sword") || itemName.contains("Sword")) {
+            // Проверяем мечи, топоры и кирки
+            if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe") ||
+                itemName.contains("Sword") || itemName.contains("Axe") || itemName.contains("Pickaxe")) {
+                
                 com.mojang.blaze3d.vertex.PoseStack poseStack = event.getPoseStack();
-                // Сжимаем до 40% (уменьшение в 2.5 раза) и немного смещаем для идеального обзора
-                poseStack.scale(0.4f, 0.4f, 0.4f);
-                poseStack.translate(0.15D, -0.1D, 0.0D);
+                poseStack.scale(0.55f, 0.55f, 0.55f); // Идеальный уменьшенный PvP масштаб
+                poseStack.translate(0.12D, -0.05D, 0.0D); // Смещение для удобного прицеливания
             }
         } catch (Exception ignored) {}
     }
