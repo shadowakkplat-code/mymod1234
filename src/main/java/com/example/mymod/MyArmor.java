@@ -10,9 +10,6 @@ public class MyArmor {
 }
 
 class ConfigScreen extends Screen {
-    // Независимые переменные калибровки ЛЕВОЙ руки, которые считывает MyMod.java
-    public static float leftY = 0.10f;
-    public static float leftZ = -0.45f;
 
     protected ConfigScreen() {
         super(Component.literal("Настройка рук"));
@@ -74,27 +71,27 @@ class ConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            // ОБРАБОТКА КЛИКОВ НА ЛЕВОЙ ПОЛОВИНЕ (Изменяют внутренние leftY и leftZ)
+            // ОБРАБОТКА КЛИКОВ НА ЛЕВОЙ ПОЛОВИНЕ (Изменяют глобальные leftY и leftZ)
             if (mx >= cxLeft && mx <= cxLeft + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
-                    leftY += 0.05f;
+                    MyMod.leftY += 0.05f;
                     return true;
                 }
                 else if (my >= cy - 35 && my <= cy - 15) {
-                    leftY -= 0.05f;
+                    MyMod.leftY -= 0.05f;
                     return true;
                 }
                 else if (my >= cy && my <= cy + 20) {
-                    leftZ -= 0.05f;
+                    MyMod.leftZ -= 0.05f;
                     return true;
                 }
                 else if (my >= cy + 25 && my <= cy + 45) {
-                    leftZ += 0.05f;
+                    MyMod.leftZ += 0.05f;
                     return true;
                 }
             }
             
-            // ОБРАБОТКА КЛИКОВ НА ПРАВОЙ ПОЛОВИНЕ (Изменяют переменные из MyMod)
+            // ОБРАБОТКА КЛИКОВ НА ПРАВОЙ ПОЛОВИНЕ (Изменяют глобальные swordY и swordZ)
             if (mx >= cxRight && mx <= cxRight + 100) {
                 if (my >= cy - 60 && my <= cy - 40) {
                     MyMod.swordY += 0.05f;
