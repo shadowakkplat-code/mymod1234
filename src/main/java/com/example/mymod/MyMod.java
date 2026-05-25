@@ -1,16 +1,25 @@
 package com.example.mymod;
 
-import java.lang.reflect.Method;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.core.particles.ParticleTypes;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import org.lwjgl.glfw.GLFW;
 
 @Mod("mymod")
 public class MyMod {
     private static boolean wasClicking = false;
     private static boolean wasKeyKDown = false;
     
-    // Переменные калибровки положения меча в руках
     public static float swordY = 0.10f;
     public static float swordZ = -0.45f;
 
@@ -18,83 +27,68 @@ public class MyMod {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyArmor());
+        // Зарегистрировали новый оптимизированный файл HUD интерфейса
+        NeoForge.EVENT_BUS.register(new MyHud()); 
     }
 
     @SubscribeEvent
-    public void onClientTick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
-        try {
-            Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
-            Object mc = mcClass.getMethod("getInstance").invoke(null);
-            Object player = mcClass.getField("player").get(mc);
-            Object level = mcClass.getField("level").get(mc);
-            
-            if (player != null && level != null) {
-                int tickCount = player.getClass().getField("tickCount").getInt(player);
-                
-                // 1. ЛЕПЕСТКИ САКУРЫ ПРИ PvP УДАРЕ
-                Object options = mcClass.getField("options").get(mc);
-                Object keyAttack = options.getClass().getField("keyAttack").get(options);
-                boolean isDown = (boolean) keyAttack.getClass().getMethod("isDown").invoke(keyAttack);
-                
-                if (isDown && !wasClicking) {
-                    Object hitResult = mcClass.getField("hitResult").get(mc);
-                    if (hitResult != null && hitResult.getClass().getMethod("getType").invoke(hitResult).toString().equals("ENTITY")) {
-                        Object target = hitResult.getClass().getMethod("getEntity").invoke(hitResult);
-                        double x = (double) target.getClass().getMethod("getX").invoke(target);
-                        double y = (double) target.getClass().getMethod("getY").invoke(target);
-                        double z = (double) target.getClass().getMethod("getZ").invoke(target);
-                        float height = (float) target.getClass().getMethod("getBbHeight").invoke(target);
-                        
-                        Class<?> ptClass = Class.forName("net.minecraft.core.particles.ParticleTypes");
-                        Object cherry = ptClass.getField("CHERRY_LEAVES").get(null);
-                        
-                        Method addP = level.getClass().getMethod("addParticle", Class.forName("net.minecraft.core.particles.ParticleOptions"), double.class, double.class, double.class, double.class, double.class, double.class);
-                        java.util.Random r = new java.util.Random();
-                        
-                        for (int i = 0; i < 15; i++) {
-                            double offsetX = (r.nextDouble() - 0.5) * 1.2;
-                            double offsetZ = (r.nextDouble() - 0.5) * 1.2;
-                            double offsetY = r.nextDouble() * height;
-                            
-                            double speedX = (r.nextDouble() - 0.5) * 0.25;
-                            double speedY = r.nextDouble() * 0.15;
-                            double speedZ = (r.nextDouble() - 0.5) * 0.25;
-                            
-                            addP.invoke(level, cherry, x + offsetX, y + offsetY, z + offsetZ, speedX, speedY, speedZ);
-                        }
-                    }
-                }
-                wasClicking = isDown;
+    public void onClientTick(ClientTickEvent.Post event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null) return;
 
-                // 2. ОТКРЫТИЕ МЕНЮ НА АНГЛИЙСКУЮ БУКВУ "K" (Код GLFW_KEY_K = 75)
-                long windowHandle = (long) mcClass.getMethod("getWindow").invoke(mc).getClass().getMethod("getWindow").invoke(mcClass.getMethod("getWindow").invoke(mc));
-                Class<?> glfwClass = Class.forName("org.lwjgl.glfw.GLFW");
-                Method getKeyMethod = glfwClass.getMethod("glfwGetKey", long.class, int.class);
+        boolean isDown = mc.options.keyAttack.isDown();
+        
+        if (isDown && !wasClicking) {
+            HitResult hitResult = mc.hitResult;
+            if (hitResult != null && hitResult.getType() == HitResult.Type.ENTITY) {
+                Entity target = ((EntityHitResult) hitResult).getEntity();
                 
-                int keyState = (int) getKeyMethod.invoke(null, windowHandle, 75); 
-                boolean isKDown = (keyState == 1);
+                double x = target.getX();
+                double y = target.getY();
+                double z = target.getZ();
+                float height = target.getBbHeight();
                 
-                if (isKDown && !wasKeyKDown && mcClass.getField("screen").get(mc) == null) {
-                    mcClass.getMethod("setScreen", Class.forName("net.minecraft.client.gui.screens.Screen")).invoke(mc, new ConfigScreen());
+                java.util.Random r = new java.util.Random();
+                
+                for (int i = 0; i < 15; i++) {
+                    double offsetX = (r.nextDouble() - 0.5) * 1.2;
+                    double offsetZ = (r.nextDouble() - 0.5) * 1.2;
+                    double offsetY = r.nextDouble() * height;
+                    
+                    double speedX = (r.nextDouble() - 0.5) * 0.25;
+                    double speedY = r.nextDouble() * 0.15;
+                    double speedZ = (r.nextDouble() - 0.5) * 0.25;
+                    
+                    mc.level.addParticle(ParticleTypes.CHERRY_LEAVES, x + offsetX, y + offsetY, z + offsetZ, speedX, speedY, speedZ);
                 }
-                wasKeyKDown = isKDown;
             }
-        } catch (Exception ignored) {}
+        }
+        wasClicking = isDown;
+
+        long windowHandle = mc.getWindow().getWindow();
+        boolean isKDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_K) == GLFW.GLFW_PRESS;
+        
+        if (isKDown && !wasKeyKDown && mc.screen == null) {
+            mc.setScreen(new ConfigScreen()); 
+        }
+        wasKeyKDown = isKDown;
     }
 
     @SubscribeEvent
-    public void onRenderHand(net.neoforged.neoforge.client.event.RenderHandEvent event) {
-        try {
-            Object itemStack = event.getItemStack();
-            String itemName = itemStack.getClass().getMethod("getItem").invoke(itemStack).toString();
-            
-            if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe") ||
-                itemName.contains("Sword") || itemName.contains("Axe") || itemName.contains("Pickaxe")) {
-                
-                com.mojang.blaze3d.vertex.PoseStack poseStack = event.getPoseStack();
-                poseStack.scale(0.55f, 0.55f, 0.55f);
-                poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
-            }
-        } catch (Exception ignored) {}
+    public void onRenderHand(RenderHandEvent event) {
+        ItemStack itemStack = event.getItemStack();
+        if (itemStack.isEmpty()) return;
+
+        String itemName = itemStack.getItem().toString().toLowerCase();
+        
+        if (itemName.contains("sword") || itemName.contains("axe") || itemName.contains("pickaxe")) {
+            RenderSystem.setupTextureBlurMipmap(false, false);
+
+            PoseStack poseStack = event.getPoseStack();
+            poseStack.pushPose();
+            poseStack.scale(0.55f, 0.55f, 0.55f);
+            poseStack.translate(0.12D, (double)swordY, (double)swordZ); 
+            poseStack.popPose();
+        }
     }
 }
