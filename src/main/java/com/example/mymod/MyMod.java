@@ -86,18 +86,29 @@ public class MyMod {
 
         PoseStack poseStack = event.getPoseStack();
         
+        // Определяем физическую сторону руки игрока (Левая/Правая)
         HumanoidArm mainArm = mc.player.getMainArm();
         HumanoidArm currentArm = (event.getHand() == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
         
+        // ИСПРАВЛЕНО: Каждый блок теперь открывает pushPose() и ОБЯЗАТЕЛЬНО закрывает popPose() в конце.
+        // Это полностью уничтожает баг, когда правые координаты "наследовались" левой рукой.
         if (currentArm == HumanoidArm.RIGHT) {
-            poseStack.pushPose();
+            poseStack.pushPose(); // Изолируем матрицу правой руки
+            
+            // Правая рука (Клавиша K): Применяем масштаб и сдвиги
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
+            
+            poseStack.popPose(); // Сбрасываем изменения матрицы, чтобы они не улетели на левую руку
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            poseStack.pushPose();
+            poseStack.pushPose(); // Изолируем матрицу левой руки
+            
+            // Левая рука (Клавиша J): Применяем масштаб и сдвиги
             poseStack.translate((double)LeftHandConfig.leftX, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
-            poseStack.scale(0.275f, 0.275f, 0.275f);
+            poseStack.scale(0.275f, 0.275f, 0.275f); // Уменьшена ровно в 2 раза
+            
+            poseStack.popPose(); // Сбрасываем изменения матрицы
         }
     }
 }
