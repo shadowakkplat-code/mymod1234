@@ -7,8 +7,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.util.FindMainArm;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemDisplayContext; // ИСПРАВЛЕНО: Новый класс контекста отображения 1.21.4
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.core.particles.ParticleTypes;
@@ -115,15 +115,15 @@ public class MyMod {
         ItemInHandRenderer itemRenderer = mc.getEntityRenderDispatcher().getItemInHandRenderer();
         MultiBufferSource bufferSource = event.getMultiBufferSource();
         int packedLight = event.getPackedLight();
-        float partialTick = event.getPartialTick();
-        float interpolatedPitch = event.getInterpolatedPitch();
-        float swingProgress = event.getSwingProgress();
-        float equipProgress = event.getEquipProgress();
+
+        // ИСПРАВЛЕНО ПОД 1.21.4: Используем новый ItemDisplayContext для отображения в первом лице
+        ItemDisplayContext displayContext = (currentArm == HumanoidArm.RIGHT) ? 
+            ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND;
 
         itemRenderer.renderItem(
             mc.player, 
             itemStack, 
-            currentArm == HumanoidArm.RIGHT ? net.minecraft.client.renderer.block.model.ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND : net.minecraft.client.renderer.block.model.ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND,
+            displayContext,
             currentArm == HumanoidArm.LEFT,
             poseStack,
             bufferSource,
