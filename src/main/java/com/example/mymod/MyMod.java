@@ -9,7 +9,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.core.particles.ParticleTypes;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -24,19 +24,13 @@ public class MyMod {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyHud()); 
-        NeoForge.EVENT_BUS.register(new MyDamage()); 
+        // Класс MyDamage полностью удален из регистрации
     }
 
     @SubscribeEvent
     public void onClientTickPost(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
-
-        // Намертво отключаем логику тряски рук в каждом тике игры
-        if (mc.player.hurtTime > 0) {
-            mc.player.hurtTime = 0;
-            mc.player.hurtDuration = 0;
-        }
 
         boolean isDown = mc.options.keyAttack.isDown();
         if (isDown && !wasClicking) {
@@ -85,17 +79,14 @@ public class MyMod {
         if (isWeapon) {
             PoseStack poseStack = event.getPoseStack();
             
-            // ПРАВАЯ РУКА (MAIN_HAND)
+            // ПРАВАЯ РУКА (MAIN_HAND) — Считывает строго RightHandConfig
             if (event.getHand() == InteractionHand.MAIN_HAND) {
-                // Изменяем саму матрицу события ДО рендеринга ванильного предмета
                 poseStack.translate(0.12D, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
                 poseStack.scale(0.55f, 0.55f, 0.55f);
             } 
-            // ЛЕВАЯ РУКА (OFF_HAND)
+            // ЛЕВАЯ РУКА (OFF_HAND) — Считывает строго LeftHandConfig
             else if (event.getHand() == InteractionHand.OFF_HAND) {
-                // Сдвигаем влево, чтобы компенсировать встроенное отзеркаливание
                 poseStack.translate(-0.45D, (double)LeftHandConfig.leftY, (double)LeftHandConfig.leftZ);
-                // Уменьшаем модель ровно в 2 раза
                 poseStack.scale(0.275f, 0.275f, 0.275f);
             }
         }
