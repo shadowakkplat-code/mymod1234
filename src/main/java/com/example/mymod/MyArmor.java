@@ -9,6 +9,7 @@ public class MyArmor {
     // Контейнер класса
 }
 
+// ЭКРАН НА КЛАВИШУ K: НАСТРОЙКА РУК ЧЕРЕЗ ТРИ ОСИ
 class RightConfigScreen extends Screen {
     protected RightConfigScreen() { super(Component.literal("Настройка рук и анимации")); }
 
@@ -38,6 +39,7 @@ class RightConfigScreen extends Screen {
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", cxLeft + 50, cy - 90, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 90, 0xFF5555);
 
+        // КНОПКИ ЛЕВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy - 20, 100, 20, mouseX, mouseY);
@@ -45,6 +47,7 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "<= Влево (Л)", cxLeft, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (Л)", cxLeft, cy + 55, 100, 20, mouseX, mouseY);
         
+        // КНОПКИ ПРАВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy - 20, 100, 20, mouseX, mouseY);
@@ -66,30 +69,32 @@ class RightConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            if (mx >= cxLeft && mx <= cxLeft + 100) {
-                if (my >= cy - 70 && my <= cy - 50) { RightHandConfig.leftY += 0.05f; return true; }
-                if (my >= cy - 45 && my <= cy - 25) { RightHandConfig.leftY -= 0.05f; return true; }
-                if (my >= cy - 20 && my <= cy) { RightHandConfig.leftZ -= 0.05f; return true; }
-                if (my >= cy + 5 && my <= cy + 25) { RightHandConfig.leftZ += 0.05f; return true; }
-                if (my >= cy + 30 && my <= cy + 50) { RightHandConfig.leftX -= 0.05f; return true; }
-                if (my >= cy + 55 && my <= cy + 75) { RightHandConfig.leftX += 0.05f; return true; }
+            // Обработка кликов левой руки
+            if (mx >= cxLeft && mx < cxLeft + 100) {
+                if (my >= cy - 70 && my < cy - 50) { RightHandConfig.leftY += 0.05f; return true; }
+                if (my >= cy - 45 && my < cy - 25) { RightHandConfig.leftY -= 0.05f; return true; }
+                if (my >= cy - 20 && my < cy) { RightHandConfig.leftZ -= 0.05f; return true; }
+                if (my >= cy + 5 && my < cy + 25) { RightHandConfig.leftZ += 0.05f; return true; }
+                if (my >= cy + 30 && my < cy + 50) { RightHandConfig.leftX -= 0.05f; return true; }
+                if (my >= cy + 55 && my < cy + 75) { RightHandConfig.leftX += 0.05f; return true; }
             }
             
-            if (mx >= cxRight && mx <= cxRight + 100) {
-                if (my >= cy - 70 && my <= cy - 50) { RightHandConfig.rightY += 0.05f; return true; }
-                if (my >= cy - 45 && my <= cy - 25) { RightHandConfig.rightY -= 0.05f; return true; }
-                if (my >= cy - 20 && my <= cy) { RightHandConfig.rightZ -= 0.05f; return true; }
-                if (my >= cy + 5 && my <= cy + 25) { RightHandConfig.rightZ += 0.05f; return true; }
-                if (my >= cy + 30 && my <= cy + 50) { RightHandConfig.rightX -= 0.05f; return true; }
-                if (my >= cy + 55 && my <= cy + 75) { RightHandConfig.rightX += 0.05f; return true; }
+            // Обработка кликов правой руки
+            if (mx >= cxRight && mx < cxRight + 100) {
+                if (my >= cy - 70 && my < cy - 50) { RightHandConfig.rightY += 0.05f; return true; }
+                if (my >= cy - 45 && my < cy - 25) { RightHandConfig.rightY -= 0.05f; return true; }
+                if (my >= cy - 20 && my < cy) { RightHandConfig.rightZ -= 0.05f; return true; }
+                if (my >= cy + 5 && my < cy + 25) { RightHandConfig.rightZ += 0.05f; return true; }
+                if (my >= cy + 30 && my < cy + 50) { RightHandConfig.rightX -= 0.05f; return true; }
+                if (my >= cy + 55 && my < cy + 75) { RightHandConfig.rightX += 0.05f; return true; }
             }
             
-            if (mx >= this.width / 2 - 75 && mx <= this.width / 2 + 75 && my >= cy + 80 && my <= cy + 100) {
+            if (mx >= this.width / 2 - 75 && mx <= this.width / 2 + 75 && my >= cy + 80 && my < cy + 100) {
                 RightHandConfig.swingMode = RightHandConfig.swingMode == 1 ? 0 : 1;
                 return true;
             }
 
-            if (mx >= this.width / 2 - 50 && mx <= this.width / 2 + 50 && my >= cy + 105 && my <= cy + 125) {
+            if (mx >= this.width / 2 - 50 && mx <= this.width / 2 + 50 && my >= cy + 105 && my < cy + 125) {
                 if (this.minecraft != null) this.minecraft.setScreen(null);
                 return true;
             }
@@ -98,58 +103,90 @@ class RightConfigScreen extends Screen {
     }
 }
 
+// ЭКРАН НА КЛАВИШУ J: СЕТКА ИЗ 5 СТОЛБИКОВ ПО 8 СТРОК (40 КНОПОК)
 class LeftConfigScreen extends Screen {
-    protected LeftConfigScreen() { super(Component.literal("Выбор PvP набора частиц")); }
+    protected LeftConfigScreen() { super(Component.literal("Сетка PvP Частиц")); }
 
     @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderTransparentBackground(graphics);
     }
 
-    private void drawCustomButton(GuiGraphics g, String text, int x, int y, int w, int h, int mx, int my, boolean active) {
+    private void drawGridButton(GuiGraphics g, String text, int x, int y, int w, int h, int mx, int my, boolean active) {
         boolean hovered = mx >= x && mx <= x + w && my >= y && my <= y + h;
-        int color = active ? 0xEE22AA22 : (hovered ? 0xEE777777 : 0xEE444444); 
+        int color = active ? 0xEE22AA22 : (hovered ? 0xEE777777 : 0xEE333333); 
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         g.fill(x, y, x + w, y + h, color);
-        g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, 0xFFFFFFFF);
+        g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, active ? 0xFFFFFFFF : 0xDDDDDD);
+    }
+
+    private String getParticleButtonName(int id) {
+        String[] names = {
+            "Эндер Искры", "Портал Вход", "Портал Выход", "Дракон Дым", "Сакура Лист", "Чары Руны", "Чернила Сквида", "Свечение",
+            "Крит Сердце", "Обычный Крит", "Маг Чары", "Индикатор ХП", "Злой Житель", "Добро Житель", "Салют Искры", "Снежинка",
+            "Огонь Ад", "Малый Огонь", "Капли Лавы", "Пламя Душ", "Обычный Дым", "Большой Дым", "Душа Моб", "Дым Костра",
+            "Ведьма Магия", "Взрыв Пооф", "Пузыри Вода", "Капли Дождя", "Мицелий Споры", "Аура Спор", "Эффект Зелья", "Белый Дым",
+            "Синее Пламя", "Душа Искры", "Скалк Душа", "Скалк Заряд", "Капли Воды", "Глоу Чернила", "Пузыри Дно", "Белый Пепел"
+        };
+        return (id >= 0 && id < 40) ? names[id] : "Частица";
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.drawCenteredString(this.font, "Нажмите ESC для возврата", this.width / 2, this.height / 2 + 90, 0xAAAAAA);
         
         int cy = this.height / 2;
-        int cx = this.width / 2 - 100;
-        
-        graphics.drawCenteredString(this.font, "==== ВЫБОР НАБОРА (8 РАЗНЫХ ЧАСТИЦ) ====", this.width / 2, cy - 80, 0xFFFF55);
+        graphics.drawCenteredString(this.font, "==== СЕТКА PvP ЧАСТИЦ (5 СТОЛБИКОВ × 8 КНОПОК) ====", this.width / 2, cy - 110, 0xFFFF55);
+        graphics.drawCenteredString(this.font, "В центре: Сакура, Эндер Род, Пламя, Крит", this.width / 2, cy - 98, 0x55FFFF);
 
-        drawCustomButton(graphics, "Набор 1: Мистический Эндер", cx, cy - 55, 200, 20, mouseX, mouseY, RightHandConfig.particleMode == 0);
-        drawCustomButton(graphics, "Набор 2: Крит и Сердца", cx, cy - 30, 200, 20, mouseX, mouseY, RightHandConfig.particleMode == 1);
-        drawCustomButton(graphics, "Набор 3: Огненный Ад", cx, cy - 5, 200, 20, mouseX, mouseY, RightHandConfig.particleMode == 2);
-        drawCustomButton(graphics, "Набор 4: Проклятие Ведьмы", cx, cy + 20, 200, 20, mouseX, mouseY, RightHandConfig.particleMode == 3);
-        drawCustomButton(graphics, "Набор 5: Хранитель Душ", cx, cy + 45, 200, 20, mouseX, mouseY, RightHandConfig.particleMode == 4);
+        int startX = this.width / 2 - 235; 
+        int startY = cy - 85;
         
-        drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 70, 100, 20, mouseX, mouseY, false);
+        int buttonId = 0;
+        for (int col = 0; col < 5; col++) {
+            for (int row = 0; row < 8; row++) {
+                int btnX = startX + (col * 94);
+                int btnY = startY + (row * 22);
+                
+                boolean isActive = (RightHandConfig.activeParticleId == buttonId);
+                drawGridButton(graphics, getParticleButtonName(buttonId), btnX, btnY, 90, 18, mouseX, mouseY, isActive);
+                buttonId++;
+            }
+        }
+        
+        drawCustomButton(graphics, "[x] Готово", this.width / 2 - 50, cy + 100, 100, 20, mouseX, mouseY);
         super.render(graphics, mouseX, mouseY, partialTick);
+    }
+
+    private void drawCustomButton(GuiGraphics g, String text, int x, int y, int w, int h, int mx, int my) {
+        boolean hovered = mx >= x && mx <= x + w && my >= y && my <= y + h;
+        g.fill(x, y, x + w, y + h, hovered ? 0xEE777777 : 0xEE444444);
+        g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, 0xFFFFFFFF);
     }
 
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
         if (button == 0) {
             int cy = this.height / 2;
-            int cx = this.width / 2 - 100;
+            int startX = this.width / 2 - 235;
+            int startY = cy - 85;
 
-            if (mx >= cx && mx <= cx + 200) {
-                if (my >= cy - 55 && my <= cy - 35) { RightHandConfig.particleMode = 0; return true; }
-                if (my >= cy - 30 && my <= cy - 10) { RightHandConfig.particleMode = 1; return true; }
-                if (my >= cy - 5 && my <= cy + 15) { RightHandConfig.particleMode = 2; return true; }
-                if (my >= cy + 20 && my <= cy + 40) { RightHandConfig.particleMode = 3; return true; }
-                if (my >= cy + 45 && my <= cy + 65) { RightHandConfig.particleMode = 4; return true; }
+            int buttonId = 0;
+            for (int col = 0; col < 5; col++) {
+                for (int row = 0; row < 8; row++) {
+                    int btnX = startX + (col * 94);
+                    int btnY = startY + (row * 22);
+
+                    if (mx >= btnX && mx <= btnX + 90 && my >= btnY && my <= btnY + 18) {
+                        RightHandConfig.activeParticleId = buttonId; 
+                        return true;
+                    }
+                    buttonId++;
+                }
             }
 
-            if (mx >= this.width / 2 - 50 && mx <= this.width / 2 + 50 && my >= cy + 70 && my <= cy + 90) {
+            if (mx >= this.width / 2 - 50 && mx <= this.width / 2 + 50 && my >= cy + 100 && my <= cy + 120) {
                 if (this.minecraft != null) this.minecraft.setScreen(null);
                 return true;
             }
