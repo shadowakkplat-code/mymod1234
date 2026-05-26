@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.particles.ParticleOptions;
@@ -84,54 +83,31 @@ public class MyMod {
 
     @SubscribeEvent
     public void onRenderHand(RenderHandEvent event) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null) return;
-        
         ItemStack itemStack = event.getItemStack();
         if (itemStack.isEmpty()) return;
 
         PoseStack poseStack = event.getPoseStack();
         InteractionHand hand = event.getHand();
-        
-        HumanoidArm mainArm = mc.player.getMainArm();
-        HumanoidArm currentArm = (hand == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
-        
         float swingProgress = event.getSwingProgress();
 
-        // МАТЕМАТИЧЕСКАЯ ИНВЕРСИЯ МАТРИЦ (МАСШТАБ И ОСИ РАБОТАЮТ, K НЕ ВЛИЯЕТ НА ЛЕВУЮ РУКУ)
-        if (currentArm == HumanoidArm.RIGHT) {
-            // 1. Применяем кастомные сдвиги и масштаб правой руки из меню K
+        if (hand == InteractionHand.MAIN_HAND) {
+            float rightScaleMultiplier = 1.0f - (RightHandConfig.rightScalePercent / 100.0f);
+            
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
-            poseStack.scale(0.55f, 0.55f, 0.55f);
+            poseStack.scale(rightScaleMultiplier, rightScaleMultiplier, rightScaleMultiplier);
 
-            // Анимация идеального прокрута меча вперед
             if (RightHandConfig.swingMode == 1 && swingProgress > 0.0f) {
                 poseStack.translate(0.0D, (double)(swingProgress * 0.4F), (double)(swingProgress * 0.1F));
                 poseStack.mulPose(Axis.XP.rotationDegrees(swingProgress * 40.0F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(-swingProgress * 20.0F));
                 poseStack.mulPose(Axis.ZP.rotationDegrees(-swingProgress * 360.0f)); 
-                
-                // Нативный обратный ход для очистки анимации замаха
-                poseStack.mulPose(Axis.ZP.rotationDegrees(swingProgress * 360.0f));
-                poseStack.mulPose(Axis.YP.rotationDegrees(swingProgress * 20.0F));
-                poseStack.mulPose(Axis.XP.rotationDegrees(-swingProgress * 40.0F));
-                poseStack.translate(0.0D, (double)(-swingProgress * 0.4F), (double)(-swingProgress * 0.1F));
             }
-            
-            // 2. Нативный обратный ход для дефолтных правых координат (Очищаем матрицу для левой руки)
-            // Деление 1 / 0.55f дает нам точный коэффициент обратного масштаба 1.81818F
-            poseStack.scale(1.81818F, 1.81818F, 1.81818F);
-            poseStack.translate(-(double)RightHandConfig.rightX, -(double)RightHandConfig.rightY, -(double)RightHandConfig.rightZ);
         } 
-        else if (currentArm == HumanoidArm.LEFT) {
-            // 1. Применяем кастомные сдвиги и уменьшенный в 2 раза масштаб левой руки из меню K
-            poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
-            poseStack.scale(0.275f, 0.275f, 0.275f);
+        else if (hand == InteractionHand.OFF_HAND) {
+            float leftScaleMultiplier = 1.0f - (RightHandConfig.leftScalePercent / 100.0f);
             
-            // 2. Нативный обратный ход для дефолтных левых координат (Очищаем матрицу кадра полностью)
-            // Деление 1 / 0.275f дает нам точный коэффициент обратного масштаба 3.63636F
-            poseStack.scale(3.63636F, 3.63636F, 3.63636F);
-            poseStack.translate(-(double)RightHandConfig.leftX, -(double)RightHandConfig.leftY, -(double)RightHandConfig.leftZ);
+            poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
+            poseStack.scale(leftScaleMultiplier, leftScaleMultiplier, leftScaleMultiplier);
         }
     }
 }
