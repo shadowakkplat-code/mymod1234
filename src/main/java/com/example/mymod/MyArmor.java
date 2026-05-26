@@ -10,7 +10,7 @@ public class MyArmor {
 }
 
 class RightConfigScreen extends Screen {
-    protected RightConfigScreen() { super(Component.literal("Настройка рук и анимации")); }
+    protected RightConfigScreen() { super(Component.literal("Настройка рук")); }
 
     @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
@@ -29,7 +29,7 @@ class RightConfigScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 135, 0xAAAAAA);
+        graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 120, 0xAAAAAA);
         
         int cy = this.height / 2;
         int cxLeft = this.width / 2 - 120;  
@@ -38,30 +38,25 @@ class RightConfigScreen extends Screen {
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", cxLeft + 50, cy - 90, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 90, 0xFF5555);
 
-        // КНОПКИ ПЕРЕМЕЩЕНИЯ ЛЕВОЙ РУКИ
+        // КНОПКИ ЛЕВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy - 20, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (Л)", cxLeft, cy + 5, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<= Влево (Л)", cxLeft, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (Л)", cxLeft, cy + 55, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "Размер (Л): -" + RightHandConfig.leftScalePercent + "%", cxLeft, cy + 80, 100, 20, mouseX, mouseY);
         
-        // КНОПКИ ПЕРЕМЕЩЕНИЯ ПРАВОЙ РУКИ
+        // КНОПКИ ПРАВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy - 20, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<- Ближе (П)", cxRight, cy + 5, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "<= Влево (П)", cxRight, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (П)", cxRight, cy + 55, 100, 20, mouseX, mouseY);
-        
-        // КНОПКИ НАСТРОЙКИ РАЗМЕРА В ПРОЦЕНТАХ
-        drawCustomButton(graphics, "Размер (Л): -" + RightHandConfig.leftScalePercent + "%", cxLeft, cy + 80, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Размер (П): -" + RightHandConfig.rightScalePercent + "%", cxRight, cy + 80, 100, 20, mouseX, mouseY);
         
-        String animName = RightHandConfig.swingMode == 1 ? "Анимация: Прокрут 360" : "Анимация: Ванилла";
-        drawCustomButton(graphics, animName, this.width / 2 - 75, cy + 105, 150, 20, mouseX, mouseY);
-        
-        drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 130, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 105, 100, 20, mouseX, mouseY);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -72,6 +67,7 @@ class RightConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
+            // Клики левой руки
             if (mx >= cxLeft && mx < cxLeft + 100) {
                 if (my >= cy - 70 && my < cy - 50) { RightHandConfig.leftY += 0.05f; return true; }
                 if (my >= cy - 45 && my < cy - 25) { RightHandConfig.leftY -= 0.05f; return true; }
@@ -85,6 +81,7 @@ class RightConfigScreen extends Screen {
                 }
             }
             
+            // Клики правой руки
             if (mx >= cxRight && mx < cxRight + 100) {
                 if (my >= cy - 70 && my < cy - 50) { RightHandConfig.rightY += 0.05f; return true; }
                 if (my >= cy - 45 && my < cy - 25) { RightHandConfig.rightY -= 0.05f; return true; }
@@ -97,13 +94,8 @@ class RightConfigScreen extends Screen {
                     return true;
                 }
             }
-            
-            if (mx >= this.width / 2 - 75 && mx <= this.width / 2 + 75 && my >= cy + 105 && my < cy + 125) {
-                RightHandConfig.swingMode = RightHandConfig.swingMode == 1 ? 0 : 1;
-                return true;
-            }
 
-            if (mx >= this.width / 2 - 50 && mx <= this.width / 2 + 50 && my >= cy + 130 && my < cy + 150) {
+            if (mx >= this.width / 2 - 50 && mx <= this.width / 2 + 50 && my >= cy + 105 && my < cy + 125) {
                 if (this.minecraft != null) this.minecraft.setScreen(null);
                 return true;
             }
