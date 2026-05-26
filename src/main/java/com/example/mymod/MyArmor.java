@@ -26,17 +26,15 @@ class RightConfigScreen extends Screen {
         g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, 0xFFFFFFFF);
     }
 
-    // Текстовые названия для 7 вариантов анимации
+    // Новые 5 названий анимаций
     private String getSwingModeName(int mode) {
         switch (mode) {
-            case 0: return "Анимация: Ванилла";
-            case 1: return "Анимация: Прокрут (360)";
-            case 2: return "Анимация: Олдскул 1.7";
-            case 3: return "Анимация: Короткий удар";
-            case 4: return "Анимация: Боковой взмах";
-            case 5: return "Анимация: Снизу вверх";
-            case 6: return "Анимация: Тяжелый замах";
-            default: return "Анимация: Ванилла";
+            case 0: return "Анимация: 1. Ванилла";
+            case 1: return "Анимация: 2. Неподвижный";
+            case 2: return "Анимация: 3. Прокрут вперед";
+            case 3: return "Анимация: 4. Вниз-Вверх";
+            case 4: return "Анимация: 5. Поворот 90 + Бока";
+            default: return "Анимация: 1. Ванилла";
         }
     }
 
@@ -57,7 +55,7 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "<= Влево (П)", cx, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (П)", cx, cy + 55, 100, 20, mouseX, mouseY);
         
-        // Новая кнопка переключения 7 анимаций (широкая, чтобы влез текст)
+        // Кнопка выбора анимации (5 вариантов)
         drawCustomButton(graphics, getSwingModeName(RightHandConfig.swingMode), this.width / 2 - 75, cy + 80, 150, 20, mouseX, mouseY);
         
         drawCustomButton(graphics, "[x] Закрыть", cx, cy + 105, 100, 20, mouseX, mouseY);
@@ -83,9 +81,8 @@ class RightConfigScreen extends Screen {
                 }
             }
             
-            // Клики по кнопке смены анимации
             if (mx >= this.width / 2 - 75 && mx < this.width / 2 + 75 && my >= cy + 80 && my < cy + 100) {
-                RightHandConfig.swingMode = (RightHandConfig.swingMode + 1) % 7; // Крутим от 0 до 6
+                RightHandConfig.swingMode = (RightHandConfig.swingMode + 1) % 5; // Крутим от 0 до 4
                 return true;
             }
         }
