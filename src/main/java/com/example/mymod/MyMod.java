@@ -12,7 +12,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.fml.common.Mod;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -97,25 +97,19 @@ public class MyMod {
         HumanoidArm mainArm = mc.player.getMainArm();
         HumanoidArm currentArm = (hand == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
 
-        // 100% ИЗОЛЯЦИЯ: Принудительный pushPose() и popPose() в каждом блоке.
-        // Матрица правой руки больше физически не затронет левую руку, а масштаб и оси заработают.
         if (currentArm == HumanoidArm.RIGHT) {
-            poseStack.pushPose(); // Изолируем правую руку
-            
+            poseStack.pushPose(); 
             float rightScaleMultiplier = 1.0f - (RightHandConfig.rightScalePercent / 100.0f);
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(rightScaleMultiplier, rightScaleMultiplier, rightScaleMultiplier);
-            
-            poseStack.popPose(); // Сбрасываем стек правой руки перед выходом из условия
+            poseStack.popPose(); 
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            poseStack.pushPose(); // Изолируем левую руку
-            
+            poseStack.pushPose(); 
             float leftScaleMultiplier = 1.0f - (RightHandConfig.leftScalePercent / 100.0f);
             poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
             poseStack.scale(leftScaleMultiplier, leftScaleMultiplier, leftScaleMultiplier);
-            
-            poseStack.popPose(); // Сбрасываем стек левой руки
+            poseStack.popPose(); 
         }
     }
 }
