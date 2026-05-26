@@ -29,7 +29,7 @@ class RightConfigScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 125, 0xAAAAAA);
+        graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 135, 0xAAAAAA);
         
         int cy = this.height / 2;
         int cxLeft = this.width / 2 - 120;  
@@ -38,6 +38,7 @@ class RightConfigScreen extends Screen {
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", cxLeft + 50, cy - 90, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 90, 0xFF5555);
 
+        // КНОПКИ ПЕРЕМЕЩЕНИЯ ЛЕВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy - 20, 100, 20, mouseX, mouseY);
@@ -45,6 +46,7 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "<= Влево (Л)", cxLeft, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (Л)", cxLeft, cy + 55, 100, 20, mouseX, mouseY);
         
+        // КНОПКИ ПЕРЕМЕЩЕНИЯ ПРАВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy - 20, 100, 20, mouseX, mouseY);
@@ -52,10 +54,14 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "<= Влево (П)", cxRight, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (П)", cxRight, cy + 55, 100, 20, mouseX, mouseY);
         
-        String animName = RightHandConfig.swingMode == 1 ? "Анимация: Прокрут 360" : "Анимация: Ванилла";
-        drawCustomButton(graphics, animName, this.width / 2 - 75, cy + 80, 150, 20, mouseX, mouseY);
+        // КНОПКИ НАСТРОЙКИ РАЗМЕРА В ПРОЦЕНТАХ
+        drawCustomButton(graphics, "Размер (Л): -" + RightHandConfig.leftScalePercent + "%", cxLeft, cy + 80, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "Размер (П): -" + RightHandConfig.rightScalePercent + "%", cxRight, cy + 80, 100, 20, mouseX, mouseY);
         
-        drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 105, 100, 20, mouseX, mouseY);
+        String animName = RightHandConfig.swingMode == 1 ? "Анимация: Прокрут 360" : "Анимация: Ванилла";
+        drawCustomButton(graphics, animName, this.width / 2 - 75, cy + 105, 150, 20, mouseX, mouseY);
+        
+        drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 130, 100, 20, mouseX, mouseY);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -73,6 +79,10 @@ class RightConfigScreen extends Screen {
                 if (my >= cy + 5 && my < cy + 25) { RightHandConfig.leftZ += 0.05f; return true; }
                 if (my >= cy + 30 && my < cy + 50) { RightHandConfig.leftX -= 0.05f; return true; }
                 if (my >= cy + 55 && my < cy + 75) { RightHandConfig.leftX += 0.05f; return true; }
+                if (my >= cy + 80 && my < cy + 100) {
+                    RightHandConfig.leftScalePercent = (RightHandConfig.leftScalePercent + 10) % 100;
+                    return true;
+                }
             }
             
             if (mx >= cxRight && mx < cxRight + 100) {
@@ -82,14 +92,18 @@ class RightConfigScreen extends Screen {
                 if (my >= cy + 5 && my < cy + 25) { RightHandConfig.rightZ += 0.05f; return true; }
                 if (my >= cy + 30 && my < cy + 50) { RightHandConfig.rightX -= 0.05f; return true; }
                 if (my >= cy + 55 && my < cy + 75) { RightHandConfig.rightX += 0.05f; return true; }
+                if (my >= cy + 80 && my < cy + 100) {
+                    RightHandConfig.rightScalePercent = (RightHandConfig.rightScalePercent + 10) % 100;
+                    return true;
+                }
             }
             
-            if (mx >= this.width / 2 - 75 && mx <= this.width / 2 + 75 && my >= cy + 80 && my < cy + 100) {
+            if (mx >= this.width / 2 - 75 && mx <= this.width / 2 + 75 && my >= cy + 105 && my < cy + 125) {
                 RightHandConfig.swingMode = RightHandConfig.swingMode == 1 ? 0 : 1;
                 return true;
             }
 
-            if (mx >= this.width / 2 - 50 && mx <= this.width / 2 + 50 && my >= cy + 105 && my < cy + 125) {
+            if (mx >= this.width / 2 - 50 && mx <= this.width / 2 + 50 && my >= cy + 130 && my < cy + 150) {
                 if (this.minecraft != null) this.minecraft.setScreen(null);
                 return true;
             }
@@ -131,7 +145,6 @@ class LeftConfigScreen extends Screen {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         
         int cy = this.height / 2;
-        // ИСПРАВЛЕНО: Лишняя длинная надпись про сакуру удалена, оставлен чистый заголовок
         graphics.drawCenteredString(this.font, "==== СЕТКА PvP ЧАСТИЦ ====", this.width / 2, cy - 105, 0xFFFF55);
 
         int startX = this.width / 2 - 235; 
