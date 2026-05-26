@@ -38,7 +38,6 @@ class RightConfigScreen extends Screen {
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", cxLeft + 50, cy - 90, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 90, 0xFF5555);
 
-        // КНОПКИ ЛЕВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy - 20, 100, 20, mouseX, mouseY);
@@ -47,7 +46,6 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "Вправо => (Л)", cxLeft, cy + 55, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Размер (Л): -" + RightHandConfig.leftScalePercent + "%", cxLeft, cy + 80, 100, 20, mouseX, mouseY);
         
-        // КНОПКИ ПРАВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy - 20, 100, 20, mouseX, mouseY);
@@ -121,13 +119,13 @@ class LeftConfigScreen extends Screen {
 
     private String getShortName(int id) {
         String[] shorts = {
-            "ROD", "PT-IN", "PT-OUT", "DRG", "SAKURA", "RUNE", "INK", "GLOW",
-            "H-CRT", "CRIT", "MAGIC", "HP-IND", "ANGRY", "HAPPY", "FW-RK", "SNOW",
-            "FIRE", "MINI-F", "LAVA", "S-FLM", "SMOKE", "L-SMK", "SOUL", "CAMP",
-            "WITCH", "POOF", "BBL", "RAIN", "MYC", "SPORE", "POT", "W-SMK",
-            "B-FLM", "S-ISK", "S-SOUL", "S-POP", "WATER", "G-INK", "DEEP-B", "ASH",
-            "FW-R2", "CLOUD", "EXPL", "POOF2", "SPORE2", "F-WTR", "F-LAV", "NOTE",
-            "ASH2", "B-POP", "PORT2", "CRIM", "WARP", "D-LAV", "D-WTR", "GLOW2"
+            "Эндер", "Порт-В", "Порт-Вы", "Дракон", "Сакура", "Руны", "Спрут", "Свечение",
+            "Крит-С", "Крит", "Чары", "ХП-Инд", "Злость", "Удача", "Салют", "Снег",
+            "Ад-Огонь", "Мини-О", "Лава", "Душ-Пл", "Дым-С", "Дым-Б", "Душа", "Костер",
+            "Ведьма", "Пооф", "Пузыри", "Дождь", "Мицелий", "Споры", "Зелье", "Бел-Дым",
+            "Син-Пл", "Искры-Д", "Скалк-Д", "Скалк-З", "Капли-В", "Глоу-Сп", "Дно-Пуз", "Пепел",
+            "Салют-2", "Облако", "Взрыв", "Пооф-2", "Споры-В", "Вода-Т", "Лава-Т", "Нота",
+            "Базальт", "Пуз-Взр", "Край-П", "Багров", "Искажен", "Ад-Кап", "Вода-К", "Глоу-2"
         };
         return (id >= 0 && id < 56) ? shorts[id] : "P-" + (id + 1);
     }
@@ -149,7 +147,7 @@ class LeftConfigScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         int cy = this.height / 2;
-        graphics.drawCenteredString(this.font, "==== СЕТКА PvP ЧАСТИЦ (56 МОДЕЛЕЙ) ====", this.width / 2, cy - 110, 0xFFFF55);
+        graphics.drawCenteredString(this.font, "==== СЕТКА PvP ЧАСТИЦ (56 ЭФФЕКТОВ) ====", this.width / 2, cy - 110, 0xFFFF55);
         int startX = this.width / 2 - 256; 
         int startY = cy - 85;
         int hoveredParticleId = -1; 
