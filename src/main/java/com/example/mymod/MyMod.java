@@ -98,24 +98,26 @@ public class MyMod {
         
         float swingProgress = event.getSwingProgress();
 
-        // 1. НАМЕРТВО ОТМЕНЯЕМ стандартную ванильную отрисовку, забирая полный контроль
+        // 1. ОТМЕНЯЕМ ванильный рендер, чтобы принудительно запечь наши масштабы
         event.setCanceled(true);
 
-        // 2. Извлекаем ссылки на внутренние менеджеры рендеринга игры
         ItemInHandRenderer itemRenderer = mc.getEntityRenderDispatcher().getItemInHandRenderer();
         MultiBufferSource bufferSource = event.getMultiBufferSource();
         int packedLight = event.getPackedLight();
         
         float interpolatedPitch = event.getInterpolatedPitch();
         float equipProgress = event.getEquipProgress();
+        
+        // ИСПРАВЛЕНО: Безопасное извлечение дельты тиков под 1.21.4 без вылетов компилятора
+        float partialTickReal = event.getPartialTick() != null ? event.getPartialTick().getGameTimeDeltaTicks() : 1.0f;
 
-        // 3. ЖЕСТКО МОДИФИЦИРУЕМ МАТРИЦУ КАДРА И РЕНДЕРИМ КАЖДУЮ РУКУ ПО ОТДЕЛЬНОСТИ
+        // 2. РЕНДЕРИМ КАЖДУЮ РУКУ ПО ОТДЕЛЬНОСТИ
         if (currentArm == HumanoidArm.RIGHT) {
-            // Принудительно сдвигаем и масштабируем ПРАВУЮ руку на основе кнопок из меню К
+            // Сдвигаем и масштабируем ПРАВУЮ руку на основе кнопок из меню К
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
 
-            // Математика идеального плавного прокрута на месте вперед по взгляду
+            // Плавный прокрут меча вперед по взгляду
             if (RightHandConfig.swingMode == 1 && swingProgress > 0.0f) {
                 poseStack.translate(0.0D, (double)(swingProgress * 0.4F), (double)(swingProgress * 0.1F));
                 poseStack.mulPose(Axis.XP.rotationDegrees(swingProgress * 40.0F));
@@ -123,29 +125,20 @@ public class MyMod {
                 poseStack.mulPose(Axis.ZP.rotationDegrees(-swingProgress * 360.0f)); 
             }
 
-            // Вызываем полноценный ванильный метод рендера руки со всеми анимациями ударов/еды, но уже с НАШИМ масштабом
+            // Вызываем полноценный ванильный метод рендера руки, но с НАШИМ масштабом и осями
             itemRenderer.renderArmWithItem(
-                mc.player, partialTick(event), interpolatedPitch, hand, swingProgress, itemStack, equipProgress, poseStack, bufferSource, packedLight
+                mc.player, partialTickReal, interpolatedPitch, hand, swingProgress, itemStack, equipProgress, poseStack, bufferSource, packedLight
             );
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            // Принудительно сдвигаем и уменьшаем ЛЕВУЮ руку ровно в два раза, слушая только левые кнопки
+            // Сдвигаем и уменьшаем ЛЕВУЮ руку ровно в два раза, слушая только левые кнопки
             poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
             poseStack.scale(0.275f, 0.275f, 0.275f);
 
             // Отрисовываем левую руку с уменьшенным масштабом
             itemRenderer.renderArmWithItem(
-                mc.player, partialTick(event), interpolatedPitch, hand, swingProgress, itemStack, equipProgress, poseStack, bufferSource, packedLight
+                mc.player, partialTickReal, interpolatedPitch, hand, swingProgress, itemStack, equipProgress, poseStack, bufferSource, packedLight
             );
-        }
-    }
-
-    // Хелпер для получения точного времени кадра под NeoForge 1.21.4 во избежание дёрганий
-    private float partialTick(RenderHandEvent event) {
-        try {
-            return event.getPartialTick();
-        } catch (NoSuchMethodError e) {
-            return 1.0f;
         }
     }
 }
