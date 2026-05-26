@@ -98,18 +98,24 @@ public class MyMod {
         HumanoidArm currentArm = (hand == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
 
         if (currentArm == HumanoidArm.RIGHT) {
-            poseStack.pushPose(); 
             float rightScaleMultiplier = 1.0f - (RightHandConfig.rightScalePercent / 100.0f);
+            
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(rightScaleMultiplier, rightScaleMultiplier, rightScaleMultiplier);
-            poseStack.popPose(); 
+            
+            float invRightScale = 1.0f / rightScaleMultiplier;
+            poseStack.scale(invRightScale, invRightScale, invRightScale);
+            poseStack.translate(-(double)RightHandConfig.rightX, -(double)RightHandConfig.rightY, -(double)RightHandConfig.rightZ);
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            poseStack.pushPose(); 
             float leftScaleMultiplier = 1.0f - (RightHandConfig.leftScalePercent / 100.0f);
+            
             poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
             poseStack.scale(leftScaleMultiplier, leftScaleMultiplier, leftScaleMultiplier);
-            poseStack.popPose(); 
+            
+            float invLeftScale = 1.0f / leftScaleMultiplier;
+            poseStack.scale(invLeftScale, invLeftScale, invLeftScale);
+            poseStack.translate(-(double)RightHandConfig.leftX, -(double)RightHandConfig.leftY, -(double)RightHandConfig.leftZ);
         }
     }
 }
