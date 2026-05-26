@@ -38,6 +38,7 @@ class RightConfigScreen extends Screen {
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", cxLeft + 50, cy - 90, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 90, 0xFF5555);
 
+        // КНОПКИ ПЕРЕМЕЩЕНИЯ ЛЕВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy - 20, 100, 20, mouseX, mouseY);
@@ -45,6 +46,7 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "<= Влево (Л)", cxLeft, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (Л)", cxLeft, cy + 55, 100, 20, mouseX, mouseY);
         
+        // КНОПКИ ПЕРЕМЕЩЕНИЯ ПРАВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy - 20, 100, 20, mouseX, mouseY);
@@ -52,6 +54,7 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "<= Влево (П)", cxRight, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (П)", cxRight, cy + 55, 100, 20, mouseX, mouseY);
         
+        // КНОПКИ НАСТРОЙКИ РАЗМЕРА В ПРОЦЕНТАХ
         drawCustomButton(graphics, "Размер (Л): -" + RightHandConfig.leftScalePercent + "%", cxLeft, cy + 80, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Размер (П): -" + RightHandConfig.rightScalePercent + "%", cxRight, cy + 80, 100, 20, mouseX, mouseY);
         
@@ -133,7 +136,6 @@ class LeftConfigScreen extends Screen {
         int cy = this.height / 2;
         graphics.drawCenteredString(this.font, "==== СЕТКА PvP ЧАСТИЦ (7 СТОЛБИКОВ × 8 КНОПОК) ====", this.width / 2, cy - 110, 0xFFFF55);
 
-        // Расширяем стартовый X влево, чтобы вместить 7 колонок по 70 пикселей (общая ширина 490 + отступы)
         int startX = this.width / 2 - 256; 
         int startY = cy - 85;
         
@@ -143,7 +145,6 @@ class LeftConfigScreen extends Screen {
                 int btnX = startX + (col * 73);
                 int btnY = startY + (row * 22);
                 
-                // Выводим компактные ID номеров частиц от 1 до 56
                 boolean isActive = (RightHandConfig.activeParticleId == buttonId);
                 drawGridButton(graphics, "P-" + (buttonId + 1), btnX, btnY, 70, 18, mouseX, mouseY, isActive);
                 buttonId++;
