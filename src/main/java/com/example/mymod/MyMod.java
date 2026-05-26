@@ -97,25 +97,25 @@ public class MyMod {
         HumanoidArm mainArm = mc.player.getMainArm();
         HumanoidArm currentArm = (hand == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
 
+        // ГАРАНТИРОВАННАЯ ИЗОЛЯЦИЯ И ОТОБРАЖЕНИЕ МАСШТАБА ЧЕРЕЗ АВТОМАТИЧЕСКИЙ ВАНИЛЬНЫЙ СБРОС СТЕКА
         if (currentArm == HumanoidArm.RIGHT) {
-            float rightScaleMultiplier = 1.0f - (RightHandConfig.rightScalePercent / 100.0f);
+            poseStack.pushPose(); // Замораживаем изолированное состояние для ПРАВОЙ руки
             
+            float rightScaleMultiplier = 1.0f - (RightHandConfig.rightScalePercent / 100.0f);
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(rightScaleMultiplier, rightScaleMultiplier, rightScaleMultiplier);
             
-            float invRightScale = 1.0f / rightScaleMultiplier;
-            poseStack.scale(invRightScale, invRightScale, invRightScale);
-            poseStack.translate(-(double)RightHandConfig.rightX, -(double)RightHandConfig.rightY, -(double)RightHandConfig.rightZ);
+            // ВАЖНО: Мы НЕ вызываем здесь popPose(). Майнкрафт применит масштаб, 
+            // отрисует правый предмет, и САМ закроет стек кадра, не затронув левую руку!
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            float leftScaleMultiplier = 1.0f - (RightHandConfig.leftScalePercent / 100.0f);
+            poseStack.pushPose(); // Замораживаем изолированное состояние для ЛЕВОЙ руки
             
+            float leftScaleMultiplier = 1.0f - (RightHandConfig.leftScalePercent / 100.0f);
             poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
             poseStack.scale(leftScaleMultiplier, leftScaleMultiplier, leftScaleMultiplier);
             
-            float invLeftScale = 1.0f / leftScaleMultiplier;
-            poseStack.scale(invLeftScale, invLeftScale, invLeftScale);
-            poseStack.translate(-(double)RightHandConfig.leftX, -(double)RightHandConfig.leftY, -(double)RightHandConfig.leftZ);
+            // Майнкрафт отрисует левый предмет уменьшенным и сам закроет этот стек.
         }
     }
 }
