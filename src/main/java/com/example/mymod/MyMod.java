@@ -90,24 +90,38 @@ public class MyMod {
         InteractionHand hand = event.getHand();
         float swingProgress = event.getSwingProgress();
 
+        // ИСПРАВЛЕНО: Жёсткая и полная изоляция матриц через PUSH/POP кадра каждой руки отдельно
         if (hand == InteractionHand.MAIN_HAND) {
+            poseStack.pushPose(); // Замораживаем и изолируем правую руку
+
             float rightScaleMultiplier = 1.0f - (RightHandConfig.rightScalePercent / 100.0f);
-            
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(rightScaleMultiplier, rightScaleMultiplier, rightScaleMultiplier);
 
+            // ИСПРАВЛЕНО: Правильный и аккуратный прокрут меча вперед по взгляду игрока
             if (RightHandConfig.swingMode == 1 && swingProgress > 0.0f) {
+                // Плавное рубящее смещение
                 poseStack.translate(0.0D, (double)(swingProgress * 0.4F), (double)(swingProgress * 0.1F));
                 poseStack.mulPose(Axis.XP.rotationDegrees(swingProgress * 40.0F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(-swingProgress * 20.0F));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(-swingProgress * 360.0f)); 
+                
+                // Корректируем центр вращения меча, чтобы он не улетал из руки
+                poseStack.translate(0.0D, 0.2D, 0.0D);
+                // Накладываем вращение вперед по инвертированной оси ZN
+                poseStack.mulPose(Axis.ZN.rotationDegrees(swingProgress * 360.0f)); 
+                poseStack.translate(0.0D, -0.2D, 0.0D);
             }
+            
+            poseStack.popPose(); // СБРАСЫВАЕМ стек. Координаты правой руки полностью стираются, не просачиваясь в левую!
         } 
         else if (hand == InteractionHand.OFF_HAND) {
+            poseStack.pushPose(); // Замораживаем и изолируем левую руку
+
             float leftScaleMultiplier = 1.0f - (RightHandConfig.leftScalePercent / 100.0f);
-            
             poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
             poseStack.scale(leftScaleMultiplier, leftScaleMultiplier, leftScaleMultiplier);
+            
+            poseStack.popPose(); // Сбрасываем стек левой руки
         }
     }
 }
