@@ -67,7 +67,6 @@ class RightConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            // Клики левой руки
             if (mx >= cxLeft && mx < cxLeft + 100) {
                 if (my >= cy - 70 && my < cy - 50) { RightHandConfig.leftY += 0.05f; return true; }
                 if (my >= cy - 45 && my < cy - 25) { RightHandConfig.leftY -= 0.05f; return true; }
@@ -81,7 +80,6 @@ class RightConfigScreen extends Screen {
                 }
             }
             
-            // Клики правой руки
             if (mx >= cxRight && mx < cxRight + 100) {
                 if (my >= cy - 70 && my < cy - 50) { RightHandConfig.rightY += 0.05f; return true; }
                 if (my >= cy - 45 && my < cy - 25) { RightHandConfig.rightY -= 0.05f; return true; }
@@ -121,29 +119,56 @@ class LeftConfigScreen extends Screen {
         g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, active ? 0xFFFFFFFF : 0xDDDDDD);
     }
 
+    private String getShortName(int id) {
+        String[] shorts = {
+            "ROD", "PT-IN", "PT-OUT", "DRG", "SAKURA", "RUNE", "INK", "GLOW",
+            "H-CRT", "CRIT", "MAGIC", "HP-IND", "ANGRY", "HAPPY", "FW-RK", "SNOW",
+            "FIRE", "MINI-F", "LAVA", "S-FLM", "SMOKE", "L-SMK", "SOUL", "CAMP",
+            "WITCH", "POOF", "BBL", "RAIN", "MYC", "SPORE", "POT", "W-SMK",
+            "B-FLM", "S-ISK", "S-SOUL", "S-POP", "WATER", "G-INK", "DEEP-B", "ASH",
+            "FW-R2", "CLOUD", "EXPL", "POOF2", "SPORE2", "F-WTR", "F-LAV", "NOTE",
+            "ASH2", "B-POP", "PORT2", "CRIM", "WARP", "D-LAV", "D-WTR", "GLOW2"
+        };
+        return (id >= 0 && id < 56) ? shorts[id] : "P-" + (id + 1);
+    }
+
+    private String getFullName(int id) {
+        String[] fulls = {
+            "Искры Эндер-Стержня", "Эффект входа в Портал", "Эффект выхода из Портала", "Драконье Дыхание", "Розовые Листья Сакуры", "Руны Стола Зачарования", "Чернила Обычного Спрута", "Светящиеся Частицы",
+            "Сердечки при Крит-ударе", "Классический Крит-удар", "Магические PvP Чары", "Индикатор урона (Сердца)", "Злость Деревенского Жителя", "Искры Удачи Жителя", "PvP Искры Фейерверка", "Зимние Снежинки",
+            "Адское Пламя", "Микро-Огонек", "Яркие Брызги Лавы", "Бирюзовое Пламя Душ", "Обычный Серый Дым", "Плотный Огненный Дым", "Летящая Душа Моб", "Уютный Дым Костра",
+            "Фиолетовая Магия Ведьмы", "Дымный Взрыв (Пооф)", "Водные PvP Пузыри", "Капли Сильного Дождя", "Споры Грибного Мицелия", "Аурические Споры Цвeтка", "Эффект Бутылочного Зелья", "Чистый Белый Дым",
+            "Яркое Синее Пламя", "Светящиеся Искры Душ", "Частицы Скалк-Души", "Скалк Зарядный Взрыв", "Падающие Капли Воды", "Чернила Светящегося Спрута", "Глубоководные Пузыри", "Серый Вулканический Пепел",
+            "Дополнительный Фейерверк", "PvP Облако", "Эффект Мини-Взрыва", "Второй Дымный Пооф", "Лесные Споры Воздуха", "Текущие Частицы Воды", "Брызги Текущей Лавы", "PvP Музыкальная Нота",
+            "Микро-Пепел Базальта", "Взрыв Водного Пузыря", "Портал Края (Второй тип)", "Споры Багрового Гриба", "Споры Искаженного Гриба", "Капающая Адская Лава", "Капающая Вода", "Второе Глубокое Свечение"
+        };
+        return (id >= 0 && id < 56) ? fulls[id] : "Кастомный PvP Эффект";
+    }
+
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
-        
         int cy = this.height / 2;
-        graphics.drawCenteredString(this.font, "==== СЕТКА PvP ЧАСТИЦ (7 СТОЛБИКОВ × 8 КНОПОК) ====", this.width / 2, cy - 110, 0xFFFF55);
-
+        graphics.drawCenteredString(this.font, "==== СЕТКА PvP ЧАСТИЦ (56 МОДЕЛЕЙ) ====", this.width / 2, cy - 110, 0xFFFF55);
         int startX = this.width / 2 - 256; 
         int startY = cy - 85;
-        
+        int hoveredParticleId = -1; 
         int buttonId = 0;
         for (int col = 0; col < 7; col++) {
             for (int row = 0; row < 8; row++) {
                 int btnX = startX + (col * 73);
                 int btnY = startY + (row * 22);
-                
                 boolean isActive = (RightHandConfig.activeParticleId == buttonId);
-                drawGridButton(graphics, "P-" + (buttonId + 1), btnX, btnY, 70, 18, mouseX, mouseY, isActive);
+                drawGridButton(graphics, getShortName(buttonId), btnX, btnY, 70, 18, mouseX, mouseY, isActive);
+                if (mouseX >= btnX && mouseX <= btnX + 70 && mouseY >= btnY && mouseY <= btnY + 18) {
+                    hoveredParticleId = buttonId;
+                }
                 buttonId++;
             }
         }
-        
-        drawCustomButton(graphics, "[x] Готово", this.width / 2 - 50, cy + 100, 100, 20, mouseX, mouseY);
+        String hintText = (hoveredParticleId != -1) ? "Выбрано: " + getFullName(hoveredParticleId) : "Наведите на кнопку, чтобы увидеть полное название";
+        graphics.drawCenteredString(this.font, hintText, this.width / 2, cy + 98, (hoveredParticleId != -1) ? 0x55FFFF : 0x777777);
+        drawCustomButton(graphics, "[x] Готово", this.width / 2 - 50, cy + 115, 100, 20, mouseX, mouseY);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -159,13 +184,11 @@ class LeftConfigScreen extends Screen {
             int cy = this.height / 2;
             int startX = this.width / 2 - 256;
             int startY = cy - 85;
-
             int buttonId = 0;
             for (int col = 0; col < 7; col++) {
                 for (int row = 0; row < 8; row++) {
                     int btnX = startX + (col * 73);
                     int btnY = startY + (row * 22);
-
                     if (mx >= btnX && mx <= btnX + 70 && my >= btnY && my <= btnY + 18) {
                         RightHandConfig.activeParticleId = buttonId; 
                         return true;
@@ -173,8 +196,7 @@ class LeftConfigScreen extends Screen {
                     buttonId++;
                 }
             }
-
-            if (mx >= this.width / 2 - 50 && mx <= this.width / 2 + 50 && my >= cy + 100 && my <= cy + 120) {
+            if (mx >= this.width / 2 - 50 && mx <= this.width / 2 + 50 && my >= cy + 115 && my <= cy + 135) {
                 if (this.minecraft != null) this.minecraft.setScreen(null);
                 return true;
             }
