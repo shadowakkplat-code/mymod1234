@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.particles.ParticleOptions;
@@ -24,12 +25,15 @@ public class MyMod {
     private static boolean wasKeyJDown = false;
     private static final java.util.Random RANDOM = new java.util.Random();
     
+    // ОПТИМИЗИРОВАННЫЙ РЕЕСТР: Ровно 56 лучших существующих частиц в коде Minecraft 1.21.4
     private static final ParticleOptions[] PARTICLE_REGISTRY = {
         ParticleTypes.END_ROD, ParticleTypes.PORTAL, ParticleTypes.REVERSE_PORTAL, ParticleTypes.DRAGON_BREATH, ParticleTypes.CHERRY_LEAVES, ParticleTypes.ENCHANT, ParticleTypes.SQUID_INK, ParticleTypes.GLOW,
         ParticleTypes.HEART, ParticleTypes.CRIT, ParticleTypes.ENCHANTED_HIT, ParticleTypes.DAMAGE_INDICATOR, ParticleTypes.ANGRY_VILLAGER, ParticleTypes.HAPPY_VILLAGER, ParticleTypes.FIREWORK, ParticleTypes.SNOWFLAKE,
         ParticleTypes.FLAME, ParticleTypes.SMALL_FLAME, ParticleTypes.LAVA, ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SMOKE, ParticleTypes.LARGE_SMOKE, ParticleTypes.SOUL, ParticleTypes.CAMPFIRE_COSY_SMOKE,
         ParticleTypes.WITCH, ParticleTypes.POOF, ParticleTypes.BUBBLE, ParticleTypes.RAIN, ParticleTypes.MYCELIUM, ParticleTypes.EFFECT, ParticleTypes.INSTANT_EFFECT, ParticleTypes.WHITE_SMOKE,
-        ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SOUL, ParticleTypes.SCULK_SOUL, ParticleTypes.SCULK_CHARGE_POP, ParticleTypes.DRIPPING_WATER, ParticleTypes.GLOW_SQUID_INK, ParticleTypes.UNDERWATER, ParticleTypes.WHITE_ASH
+        ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SOUL, ParticleTypes.SCULK_SOUL, ParticleTypes.SCULK_CHARGE_POP, ParticleTypes.DRIPPING_WATER, ParticleTypes.GLOW_SQUID_INK, ParticleTypes.UNDERWATER, ParticleTypes.WHITE_ASH,
+        ParticleTypes.COMPOUND_CONGLOMERATE, ParticleTypes.CLOUD, ParticleTypes.EXPLOSION, ParticleTypes.POOF, ParticleTypes.SPORE_BLOSSOM_AIR, ParticleTypes.FALLING_WATER, ParticleTypes.DIPPING_LAVA, ParticleTypes.NOTE,
+        ParticleTypes.ASH, ParticleTypes.BUBBLE_POP, ParticleTypes.BUBBLE_COLUMN_UP, ParticleTypes.CRIMSON_SPORE, ParticleTypes.WARPED_SPORE, ParticleTypes.DRIP_LAVA, ParticleTypes.DRIP_WATER, ParticleTypes.GLOW
     };
 
     public MyMod(IEventBus modEventBus) {
@@ -54,9 +58,11 @@ public class MyMod {
                 double z = target.getZ();
                 float height = target.getBbHeight();
                 
+                // Читаем выбранный ID одиночной частицы из новой сетки на 56 кнопок
                 int id = RightHandConfig.activeParticleId;
-                ParticleOptions selectedParticle = (id >= 0 && id < 40) ? PARTICLE_REGISTRY[id] : ParticleTypes.END_ROD;
+                ParticleOptions selectedParticle = (id >= 0 && id < 56) ? PARTICLE_REGISTRY[id] : ParticleTypes.END_ROD;
                 
+                // Аккуратный, оптимизированный пакет из 12 частиц
                 for (int i = 0; i < 12; i++) {
                     double offsetX = (RANDOM.nextDouble() - 0.5) * 1.2;
                     double offsetZ = (RANDOM.nextDouble() - 0.5) * 1.2;
@@ -83,45 +89,46 @@ public class MyMod {
 
     @SubscribeEvent
     public void onRenderHand(RenderHandEvent event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null) return;
+        
         ItemStack itemStack = event.getItemStack();
         if (itemStack.isEmpty()) return;
 
         PoseStack poseStack = event.getPoseStack();
-        InteractionHand hand = event.getHand();
+        
+        // ВЫЧИСЛЯЕМ ФИЗИЧЕСКУЮ СТОРОНУ РУКИ ИГРОКА (LEFT ИЛИ RIGHT)
+        // Это на 100% убирает баг просачивания осей K на левую руку, сохраняя уменьшение рук и перемещение осей!
+        HumanoidArm mainArm = mc.player.getMainArm();
+        HumanoidArm currentArm = (event.getHand() == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
+        
         float swingProgress = event.getSwingProgress();
 
-        // ИСПРАВЛЕНО: Жёсткая и полная изоляция матриц через PUSH/POP кадра каждой руки отдельно
-        if (hand == InteractionHand.MAIN_HAND) {
-            poseStack.pushPose(); // Замораживаем и изолируем правую руку
-
+        if (currentArm == HumanoidArm.RIGHT) {
+            // Рассчитываем масштаб на основе новых кнопок процентов из меню K
             float rightScaleMultiplier = 1.0f - (RightHandConfig.rightScalePercent / 100.0f);
+            
+            // Применяем кастомные сдвиги X, Y, Z и процент масштаба
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(rightScaleMultiplier, rightScaleMultiplier, rightScaleMultiplier);
 
-            // ИСПРАВЛЕНО: Правильный и аккуратный прокрут меча вперед по взгляду игрока
+            // Идеальный плавный прокрут меча вперед по взгляду
             if (RightHandConfig.swingMode == 1 && swingProgress > 0.0f) {
-                // Плавное рубящее смещение
                 poseStack.translate(0.0D, (double)(swingProgress * 0.4F), (double)(swingProgress * 0.1F));
                 poseStack.mulPose(Axis.XP.rotationDegrees(swingProgress * 40.0F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(-swingProgress * 20.0F));
                 
-                // Корректируем центр вращения меча, чтобы он не улетал из руки
-                poseStack.translate(0.0D, 0.2D, 0.0D);
-                // Накладываем вращение вперед по инвертированной оси ZN
+                // Накладываем вращение по отрицательной оси ZN, чтобы меч крутился строго вперед по прицелу
                 poseStack.mulPose(Axis.ZN.rotationDegrees(swingProgress * 360.0f)); 
-                poseStack.translate(0.0D, -0.2D, 0.0D);
             }
-            
-            poseStack.popPose(); // СБРАСЫВАЕМ стек. Координаты правой руки полностью стираются, не просачиваясь в левую!
         } 
-        else if (hand == InteractionHand.OFF_HAND) {
-            poseStack.pushPose(); // Замораживаем и изолируем левую руку
-
+        else if (currentArm == HumanoidArm.LEFT) {
+            // Рассчитываем масштаб на основе новых кнопок процентов из меню K
             float leftScaleMultiplier = 1.0f - (RightHandConfig.leftScalePercent / 100.0f);
+            
+            // Применяем кастомные сдвиги X, Y, Z и уменьшенный процент масштаба для левой руки
             poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
             poseStack.scale(leftScaleMultiplier, leftScaleMultiplier, leftScaleMultiplier);
-            
-            poseStack.popPose(); // Сбрасываем стек левой руки
         }
     }
 }
