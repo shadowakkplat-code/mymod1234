@@ -9,7 +9,6 @@ public class MyArmor {
     // Контейнер класса
 }
 
-// ЭКРАН НА КЛАВИШУ K: НАСТРОЙКА РУК
 class RightConfigScreen extends Screen {
     protected RightConfigScreen() { super(Component.literal("Настройка рук и анимации")); }
 
@@ -39,7 +38,6 @@ class RightConfigScreen extends Screen {
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", cxLeft + 50, cy - 90, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 90, 0xFF5555);
 
-        // ЛЕВАЯ РУКА КНОПКИ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy - 20, 100, 20, mouseX, mouseY);
@@ -47,7 +45,6 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "<= Влево (Л)", cxLeft, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (Л)", cxLeft, cy + 55, 100, 20, mouseX, mouseY);
         
-        // ПРАВАЯ РУКА КНОПКИ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy - 20, 100, 20, mouseX, mouseY);
@@ -69,30 +66,30 @@ class RightConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            if (mx >= cxLeft && mx < cxLeft + 100) {
-                if (my >= cy - 70 && my < cy - 50) { RightHandConfig.leftY += 0.05f; return true; }
-                if (my >= cy - 45 && my < cy - 25) { RightHandConfig.leftY -= 0.05f; return true; }
-                if (my >= cy - 20 && my < cy) { RightHandConfig.leftZ -= 0.05f; return true; }
-                if (my >= cy + 5 && my < cy + 25) { RightHandConfig.leftZ += 0.05f; return true; }
-                if (my >= cy + 30 && my < cy + 50) { RightHandConfig.leftX -= 0.05f; return true; }
-                if (my >= cy + 55 && my < cy + 75) { RightHandConfig.leftX += 0.05f; return true; }
+            if (mx >= cxLeft && mx <= cxLeft + 100) {
+                if (my >= cy - 70 && my <= cy - 50) { RightHandConfig.leftY += 0.05f; return true; }
+                if (my >= cy - 45 && my <= cy - 25) { RightHandConfig.leftY -= 0.05f; return true; }
+                if (my >= cy - 20 && my <= cy) { RightHandConfig.leftZ -= 0.05f; return true; }
+                if (my >= cy + 5 && my <= cy + 25) { RightHandConfig.leftZ += 0.05f; return true; }
+                if (my >= cy + 30 && my <= cy + 50) { RightHandConfig.leftX -= 0.05f; return true; }
+                if (my >= cy + 55 && my <= cy + 75) { RightHandConfig.leftX += 0.05f; return true; }
             }
             
-            if (mx >= cxRight && mx < cxRight + 100) {
-                if (my >= cy - 70 && my < cy - 50) { RightHandConfig.rightY += 0.05f; return true; }
-                if (my >= cy - 45 && my < cy - 25) { RightHandConfig.rightY -= 0.05f; return true; }
-                if (my >= cy - 20 && my < cy) { RightHandConfig.rightZ -= 0.05f; return true; }
-                if (my >= cy + 5 && my < cy + 25) { RightHandConfig.rightZ += 0.05f; return true; }
-                if (my >= cy + 30 && my < cy + 50) { RightHandConfig.rightX -= 0.05f; return true; }
-                if (my >= cy + 55 && my < cy + 75) { RightHandConfig.rightX += 0.05f; return true; }
+            if (mx >= cxRight && mx <= cxRight + 100) {
+                if (my >= cy - 70 && my <= cy - 50) { RightHandConfig.rightY += 0.05f; return true; }
+                if (my >= cy - 45 && my <= cy - 25) { RightHandConfig.rightY -= 0.05f; return true; }
+                if (my >= cy - 20 && my <= cy) { RightHandConfig.rightZ -= 0.05f; return true; }
+                if (my >= cy + 5 && my <= cy + 25) { RightHandConfig.rightZ += 0.05f; return true; }
+                if (my >= cy + 30 && my <= cy + 50) { RightHandConfig.rightX -= 0.05f; return true; }
+                if (my >= cy + 55 && my <= cy + 75) { RightHandConfig.rightX += 0.05f; return true; }
             }
             
-            if (mx >= this.width / 2 - 75 && mx < this.width / 2 + 75 && my >= cy + 80 && my < cy + 100) {
+            if (mx >= this.width / 2 - 75 && mx <= this.width / 2 + 75 && my >= cy + 80 && my <= cy + 100) {
                 RightHandConfig.swingMode = RightHandConfig.swingMode == 1 ? 0 : 1;
                 return true;
             }
 
-            if (mx >= this.width / 2 - 50 && mx < this.width / 2 + 50 && my >= cy + 105 && my < cy + 125) {
+            if (mx >= this.width / 2 - 50 && mx <= this.width / 2 + 50 && my >= cy + 105 && my <= cy + 125) {
                 if (this.minecraft != null) this.minecraft.setScreen(null);
                 return true;
             }
@@ -101,9 +98,8 @@ class RightConfigScreen extends Screen {
     }
 }
 
-// ЭКРАН НА КЛАВИШУ J: ВЫБОР ЧАСТИЦ (Исправлена ширина кнопок и хитбоксы клика)
 class LeftConfigScreen extends Screen {
-    protected LeftConfigScreen() { super(Component.literal("Выбор PvP эффекта частиц")); }
+    protected LeftConfigScreen() { super(Component.literal("Выбор PvP набора частиц")); }
 
     @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
@@ -125,16 +121,15 @@ class LeftConfigScreen extends Screen {
         graphics.drawCenteredString(this.font, "Нажмите ESC для возврата", this.width / 2, this.height / 2 + 90, 0xAAAAAA);
         
         int cy = this.height / 2;
-        int cx = this.width / 2 - 75; // Кнопка шириной 150 пикселей, центрируем (150 / 2 = 75)
+        int cx = this.width / 2 - 100;
         
-        graphics.drawCenteredString(this.font, "==== ТИП PvP ЧАСТИЦ (ИХ БУДЕТ 50) ====", this.width / 2, cy - 80, 0xFFFF55);
+        graphics.drawCenteredString(this.font, "==== ВЫБОР НАБОРА (8 РАЗНЫХ ЧАСТИЦ) ====", this.width / 2, cy - 80, 0xFFFF55);
 
-        // Исправлено: ширина кнопок выставлена в 150, чтобы соответствовать хитбоксу
-        drawCustomButton(graphics, "1. Искры Энда", cx, cy - 55, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 0);
-        drawCustomButton(graphics, "2. Крит-Сердечки", cx, cy - 30, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 1);
-        drawCustomButton(graphics, "3. Огненный Взрыв", cx, cy - 5, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 2);
-        drawCustomButton(graphics, "4. Ведьмин Дым", cx, cy + 20, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 3);
-        drawCustomButton(graphics, "5. Огненные Души", cx, cy + 45, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 4);
+        drawCustomButton(graphics, "Набор 1: Мистический Эндер", cx, cy - 55, 200, 20, mouseX, mouseY, RightHandConfig.particleMode == 0);
+        drawCustomButton(graphics, "Набор 2: Крит и Сердца", cx, cy - 30, 200, 20, mouseX, mouseY, RightHandConfig.particleMode == 1);
+        drawCustomButton(graphics, "Набор 3: Огненный Ад", cx, cy - 5, 200, 20, mouseX, mouseY, RightHandConfig.particleMode == 2);
+        drawCustomButton(graphics, "Набор 4: Проклятие Ведьмы", cx, cy + 20, 200, 20, mouseX, mouseY, RightHandConfig.particleMode == 3);
+        drawCustomButton(graphics, "Набор 5: Хранитель Душ", cx, cy + 45, 200, 20, mouseX, mouseY, RightHandConfig.particleMode == 4);
         
         drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 70, 100, 20, mouseX, mouseY, false);
         super.render(graphics, mouseX, mouseY, partialTick);
@@ -144,10 +139,9 @@ class LeftConfigScreen extends Screen {
     public boolean mouseClicked(double mx, double my, int button) {
         if (button == 0) {
             int cy = this.height / 2;
-            int cx = this.width / 2 - 75;
+            int cx = this.width / 2 - 100;
 
-            // ИСПРАВЛЕНО: Хитбоксы кликов теперь идеально совпадают со всеми 5 кнопками выбора частиц
-            if (mx >= cx && mx <= cx + 150) {
+            if (mx >= cx && mx <= cx + 200) {
                 if (my >= cy - 55 && my <= cy - 35) { RightHandConfig.particleMode = 0; return true; }
                 if (my >= cy - 30 && my <= cy - 10) { RightHandConfig.particleMode = 1; return true; }
                 if (my >= cy - 5 && my <= cy + 15) { RightHandConfig.particleMode = 2; return true; }
