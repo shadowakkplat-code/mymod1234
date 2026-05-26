@@ -57,12 +57,10 @@ public class MyMod {
                 double z = target.getZ();
                 float height = target.getBbHeight();
                 
-                int id = RightHandConfig.activeParticleId;
+                int id = MyModConfig.activeParticleId;
                 ParticleOptions selectedParticle = (id >= 0 && id < 56) ? PARTICLE_REGISTRY[id] : ParticleTypes.END_ROD;
                 
-                // Аккуратный сжатый PvP-пакет из 12 частиц
                 for (int i = 0; i < 12; i++) {
-                    // ИСПРАВЛЕНО: Множитель уменьшен до 0.4. Частицы кучно ложатся на хитбокс
                     double offsetX = (RANDOM.nextDouble() - 0.5) * 0.4;
                     double offsetZ = (RANDOM.nextDouble() - 0.5) * 0.4;
                     double offsetY = RANDOM.nextDouble() * height;
@@ -77,17 +75,14 @@ public class MyMod {
         }
         wasClicking = isDown;
         
-        // Открытие меню на K (Правое)
         boolean isKDown = MyKeyBindings.OPEN_RIGHT_CONFIG.isDown();
         if (isKDown && !wasKeyKDown && mc.screen == null) { mc.setScreen(new RightConfigScreen()); }
         wasKeyKDown = isKDown;
 
-        // Открытие меню на I (Левое)
         boolean isIDown = MyKeyBindings.OPEN_LEFT_CONFIG.isDown();
         if (isIDown && !wasKeyIDown && mc.screen == null) { mc.setScreen(new LeftConfigScreen()); }
         wasKeyIDown = isIDown;
 
-        // Открытие меню на J (Частицы)
         boolean isJDown = MyKeyBindings.OPEN_PARTICLE_CONFIG.isDown();
         if (isJDown && !wasKeyJDown && mc.screen == null) { mc.setScreen(new ParticleConfigScreen()); }
         wasKeyJDown = isJDown;
@@ -107,25 +102,19 @@ public class MyMod {
         HumanoidArm mainArm = mc.player.getMainArm();
         HumanoidArm currentArm = (hand == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
 
-        // 100% РАЗДЕЛЬНОЕ PvP-УПРАВЛЕНИЕ РУКАМИ ЧЕРЕЗ АВТОМАТИЧЕСКИЙ СБРОС ИЗОЛИРОВАННОГО СТЕКА КАДРА
         if (currentArm == HumanoidArm.RIGHT) {
-            poseStack.pushPose(); // Полностью замораживаем изолированное состояние для ПРАВОЙ руки
-            
-            float rightScaleMultiplier = 1.0f - (RightHandConfig.rightScalePercent / 100.0f);
-            poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
+            poseStack.pushPose(); 
+            float rightScaleMultiplier = 1.0f - (MyModConfig.rightScalePercent / 100.0f);
+            poseStack.translate(MyModConfig.rightX, MyModConfig.rightY, MyModConfig.rightZ);
             poseStack.scale(rightScaleMultiplier, rightScaleMultiplier, rightScaleMultiplier);
-            
-            // ВАЖНО: Мы не пишем здесь popPose(). Майнкрафт применит сдвиг и масштаб, 
-            // отрисует модель правого предмета и сам закроет этот изолированный стек кадра кадра.
+            poseStack.popPose(); // Исправлен вылет рендера правой руки
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            poseStack.pushPose(); // Полностью замораживаем изолированное состояние для ЛЕВОЙ руки
-            
-            float leftScaleMultiplier = 1.0f - (RightHandConfig.leftScalePercent / 100.0f);
-            poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
+            poseStack.pushPose(); 
+            float leftScaleMultiplier = 1.0f - (MyModConfig.leftScalePercent / 100.0f);
+            poseStack.translate(MyModConfig.leftX, MyModConfig.leftY, MyModConfig.leftZ);
             poseStack.scale(leftScaleMultiplier, leftScaleMultiplier, leftScaleMultiplier);
-            
-            // Майнкрафт отрисует левый предмет уменьшенным и сам сбросит матрицу кадра кадра.
+            poseStack.popPose(); // Исправлен вылет рендера левой руки
         }
     }
 }
