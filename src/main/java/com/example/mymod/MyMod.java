@@ -46,24 +46,24 @@ public class MyMod {
         double y = target.getY();
         double z = target.getZ();
 
-        // ИСПРАВЛЕНО: Заменили DIP_SQUEAK, GUST_EMITTER и TRIAL_SPAWNER на 100% стабильные частицы
+        // ИСПРАВЛЕНО: Заменили ненайденные частицы на проверенные FIREWORK и DRIPPING_WATER
         ParticleOptions[][] particleCombos = {
             // Набор 1: Мистический Эндер
             { ParticleTypes.END_ROD, ParticleTypes.PORTAL, ParticleTypes.REVERSE_PORTAL, ParticleTypes.DRAGON_BREATH, ParticleTypes.CHERRY_LEAVES, ParticleTypes.ENCHANT, ParticleTypes.SQUID_INK, ParticleTypes.GLOW },
             // Набор 2: Крит и Сердца
-            { ParticleTypes.HEART, ParticleTypes.CRIT, ParticleTypes.ENCHANTED_HIT, ParticleTypes.DAMAGE_INDICATOR, ParticleTypes.ANGRY_VILLAGER, ParticleTypes.HAPPY_VILLAGER, ParticleTypes.COMPOUND_CONGLOMERATE, ParticleTypes.SNOWFLAKE },
+            { ParticleTypes.HEART, ParticleTypes.CRIT, ParticleTypes.ENCHANTED_HIT, ParticleTypes.DAMAGE_INDICATOR, ParticleTypes.ANGRY_VILLAGER, ParticleTypes.HAPPY_VILLAGER, ParticleTypes.FIREWORK, ParticleTypes.SNOWFLAKE },
             // Набор 3: Огненный Ад
             { ParticleTypes.FLAME, ParticleTypes.SMALL_FLAME, ParticleTypes.LAVA, ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SMOKE, ParticleTypes.LARGE_SMOKE, ParticleTypes.SOUL, ParticleTypes.CAMPFIRE_COSY_SMOKE },
             // Набор 4: Проклятие Ведьмы
             { ParticleTypes.WITCH, ParticleTypes.POOF, ParticleTypes.BUBBLE, ParticleTypes.RAIN, ParticleTypes.MYCELIUM, ParticleTypes.EFFECT, ParticleTypes.INSTANT_EFFECT, ParticleTypes.WHITE_SMOKE },
             // Набор 5: Хранитель Душ
-            { ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SOUL, ParticleTypes.SCULK_SOUL, ParticleTypes.SCULK_CHARGE_POP, ParticleTypes.DRIP_WATER, ParticleTypes.GLOW_SQUID_INK, ParticleTypes.UNDERWATER, ParticleTypes.WHITE_ASH }
+            { ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SOUL, ParticleTypes.SCULK_SOUL, ParticleTypes.SCULK_CHARGE_POP, ParticleTypes.DRIPPING_WATER, ParticleTypes.GLOW_SQUID_INK, ParticleTypes.UNDERWATER, ParticleTypes.WHITE_ASH }
         };
 
         int selectedIndex = (mode >= 0 && mode < 5) ? mode : 0;
         ParticleOptions[] currentCombo = particleCombos[selectedIndex];
 
-        // Аккуратный PvP-пакет из 12 частиц на один удар
+        // Спавним 12 частиц на один удар
         for (int i = 0; i < 12; i++) {
             double offsetX = (RANDOM.nextDouble() - 0.5) * 1.2;
             double offsetZ = (RANDOM.nextDouble() - 0.5) * 1.2;
