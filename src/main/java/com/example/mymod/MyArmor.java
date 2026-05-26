@@ -9,7 +9,6 @@ public class MyArmor {
     // Контейнер класса
 }
 
-// ЭКРАН НА КЛАВИШУ K: НАСТРОЙКА РУК ЧЕРЕЗ ТРИ ОСИ
 class RightConfigScreen extends Screen {
     protected RightConfigScreen() { super(Component.literal("Настройка рук и анимации")); }
 
@@ -39,7 +38,6 @@ class RightConfigScreen extends Screen {
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", cxLeft + 50, cy - 90, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 90, 0xFF5555);
 
-        // КНОПКИ ЛЕВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy - 20, 100, 20, mouseX, mouseY);
@@ -47,7 +45,6 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "<= Влево (Л)", cxLeft, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (Л)", cxLeft, cy + 55, 100, 20, mouseX, mouseY);
         
-        // КНОПКИ ПРАВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy - 20, 100, 20, mouseX, mouseY);
@@ -69,7 +66,6 @@ class RightConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            // Обработка кликов левой руки
             if (mx >= cxLeft && mx < cxLeft + 100) {
                 if (my >= cy - 70 && my < cy - 50) { RightHandConfig.leftY += 0.05f; return true; }
                 if (my >= cy - 45 && my < cy - 25) { RightHandConfig.leftY -= 0.05f; return true; }
@@ -79,7 +75,6 @@ class RightConfigScreen extends Screen {
                 if (my >= cy + 55 && my < cy + 75) { RightHandConfig.leftX += 0.05f; return true; }
             }
             
-            // Обработка кликов правой руки
             if (mx >= cxRight && mx < cxRight + 100) {
                 if (my >= cy - 70 && my < cy - 50) { RightHandConfig.rightY += 0.05f; return true; }
                 if (my >= cy - 45 && my < cy - 25) { RightHandConfig.rightY -= 0.05f; return true; }
@@ -103,7 +98,6 @@ class RightConfigScreen extends Screen {
     }
 }
 
-// ЭКРАН НА КЛАВИШУ J: СЕТКА ИЗ 5 СТОЛБИКОВ ПО 8 СТРОК (40 КНОПОК)
 class LeftConfigScreen extends Screen {
     protected LeftConfigScreen() { super(Component.literal("Сетка PvP Частиц")); }
 
@@ -137,8 +131,8 @@ class LeftConfigScreen extends Screen {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         
         int cy = this.height / 2;
-        graphics.drawCenteredString(this.font, "==== СЕТКА PvP ЧАСТИЦ (5 СТОЛБИКОВ × 8 КНОПОК) ====", this.width / 2, cy - 110, 0xFFFF55);
-        graphics.drawCenteredString(this.font, "В центре: Сакура, Эндер Род, Пламя, Крит", this.width / 2, cy - 98, 0x55FFFF);
+        // ИСПРАВЛЕНО: Лишняя длинная надпись про сакуру удалена, оставлен чистый заголовок
+        graphics.drawCenteredString(this.font, "==== СЕТКА PvP ЧАСТИЦ ====", this.width / 2, cy - 105, 0xFFFF55);
 
         int startX = this.width / 2 - 235; 
         int startY = cy - 85;
