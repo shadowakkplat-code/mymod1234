@@ -38,7 +38,6 @@ class RightConfigScreen extends Screen {
         graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", cxLeft + 50, cy - 90, 0x55FF55);
         graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 90, 0xFF5555);
 
-        // КНОПКИ ПЕРЕМЕЩЕНИЯ ЛЕВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy - 20, 100, 20, mouseX, mouseY);
@@ -46,7 +45,6 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "<= Влево (Л)", cxLeft, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (Л)", cxLeft, cy + 55, 100, 20, mouseX, mouseY);
         
-        // КНОПКИ ПЕРЕМЕЩЕНИЯ ПРАВОЙ РУКИ
         drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 70, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 45, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy - 20, 100, 20, mouseX, mouseY);
@@ -54,7 +52,6 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "<= Влево (П)", cxRight, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (П)", cxRight, cy + 55, 100, 20, mouseX, mouseY);
         
-        // КНОПКИ НАСТРОЙКИ РАЗМЕРА В ПРОЦЕНТАХ
         drawCustomButton(graphics, "Размер (Л): -" + RightHandConfig.leftScalePercent + "%", cxLeft, cy + 80, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Размер (П): -" + RightHandConfig.rightScalePercent + "%", cxRight, cy + 80, 100, 20, mouseX, mouseY);
         
@@ -129,35 +126,26 @@ class LeftConfigScreen extends Screen {
         g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, active ? 0xFFFFFFFF : 0xDDDDDD);
     }
 
-    private String getParticleButtonName(int id) {
-        String[] names = {
-            "Эндер Искры", "Портал Вход", "Портал Выход", "Дракон Дым", "Сакура Лист", "Чары Руны", "Чернила Сквида", "Свечение",
-            "Крит Сердце", "Обычный Крит", "Маг Чары", "Индикатор ХП", "Злой Житель", "Добро Житель", "Салют Искры", "Снежинка",
-            "Огонь Ад", "Малый Огонь", "Капли Лавы", "Пламя Душ", "Обычный Дым", "Большой Дым", "Душа Моб", "Дым Костра",
-            "Ведьма Магия", "Взрыв Пооф", "Пузыри Вода", "Капли Дождя", "Мицелий Споры", "Аура Спор", "Эффект Зелья", "Белый Дым",
-            "Синее Пламя", "Душа Искры", "Скалк Душа", "Скалк Заряд", "Капли Воды", "Глоу Чернила", "Пузыри Дно", "Белый Пепел"
-        };
-        return (id >= 0 && id < 40) ? names[id] : "Частица";
-    }
-
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         
         int cy = this.height / 2;
-        graphics.drawCenteredString(this.font, "==== СЕТКА PvP ЧАСТИЦ ====", this.width / 2, cy - 105, 0xFFFF55);
+        graphics.drawCenteredString(this.font, "==== СЕТКА PvP ЧАСТИЦ (7 СТОЛБИКОВ × 8 КНОПОК) ====", this.width / 2, cy - 110, 0xFFFF55);
 
-        int startX = this.width / 2 - 235; 
+        // Расширяем стартовый X влево, чтобы вместить 7 колонок по 70 пикселей (общая ширина 490 + отступы)
+        int startX = this.width / 2 - 256; 
         int startY = cy - 85;
         
         int buttonId = 0;
-        for (int col = 0; col < 5; col++) {
+        for (int col = 0; col < 7; col++) {
             for (int row = 0; row < 8; row++) {
-                int btnX = startX + (col * 94);
+                int btnX = startX + (col * 73);
                 int btnY = startY + (row * 22);
                 
+                // Выводим компактные ID номеров частиц от 1 до 56
                 boolean isActive = (RightHandConfig.activeParticleId == buttonId);
-                drawGridButton(graphics, getParticleButtonName(buttonId), btnX, btnY, 90, 18, mouseX, mouseY, isActive);
+                drawGridButton(graphics, "P-" + (buttonId + 1), btnX, btnY, 70, 18, mouseX, mouseY, isActive);
                 buttonId++;
             }
         }
@@ -176,16 +164,16 @@ class LeftConfigScreen extends Screen {
     public boolean mouseClicked(double mx, double my, int button) {
         if (button == 0) {
             int cy = this.height / 2;
-            int startX = this.width / 2 - 235;
+            int startX = this.width / 2 - 256;
             int startY = cy - 85;
 
             int buttonId = 0;
-            for (int col = 0; col < 5; col++) {
+            for (int col = 0; col < 7; col++) {
                 for (int row = 0; row < 8; row++) {
-                    int btnX = startX + (col * 94);
+                    int btnX = startX + (col * 73);
                     int btnY = startY + (row * 22);
 
-                    if (mx >= btnX && mx <= btnX + 90 && my >= btnY && my <= btnY + 18) {
+                    if (mx >= btnX && mx <= btnX + 70 && my >= btnY && my <= btnY + 18) {
                         RightHandConfig.activeParticleId = buttonId; 
                         return true;
                     }
