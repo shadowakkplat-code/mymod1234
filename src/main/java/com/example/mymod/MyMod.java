@@ -27,24 +27,18 @@ public class MyMod {
     private static final java.util.Random RANDOM = new java.util.Random();
 
     public MyMod(IEventBus modEventBus) {
-        // Регистрация официальных клавиш в системе NeoForge
         modEventBus.addListener(MyKeyBindings::registerKeys);
-
-        // Регистрация остальных модулей мода
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyHud()); 
     }
 
     private ParticleOptions getSelectedParticle(int mode) {
-        switch (mode) {
-            case 0: return ParticleTypes.END_ROD;         
-            case 1: return ParticleTypes.HEART;           
-            case 2: return ParticleTypes.FLAME;           
-            case 3: return ParticleTypes.WITCH;           
-            case 4: return ParticleTypes.SOUL_FIRE_FLAME; 
-            default: return ParticleTypes.END_ROD;
-        }
+        if (mode == 1) return ParticleTypes.HEART;           
+        if (mode == 2) return ParticleTypes.FLAME;           
+        if (mode == 3) return ParticleTypes.WITCH;           
+        if (mode == 4) return ParticleTypes.SOUL_FIRE_FLAME; 
+        return ParticleTypes.END_ROD;                        
     }
 
     @SubscribeEvent
@@ -65,6 +59,7 @@ public class MyMod {
                 
                 ParticleOptions particle = getSelectedParticle(RightHandConfig.particleMode);
                 
+                // Спавним ровно 50 мощных PvP-частиц выбранного типа
                 for (int i = 0; i < 50; i++) {
                     double offsetX = (RANDOM.nextDouble() - 0.5) * 1.5;
                     double offsetZ = (RANDOM.nextDouble() - 0.5) * 1.5;
@@ -80,7 +75,6 @@ public class MyMod {
         }
         wasClicking = isDown;
         
-        // Обработка кастомных биндов клавиш через игровой менеджер KeyMapping
         boolean isKDown = MyKeyBindings.OPEN_RIGHT_CONFIG.isDown();
         if (isKDown && !wasKeyKDown && mc.screen == null) {
             mc.setScreen(new RightConfigScreen()); 
@@ -110,24 +104,33 @@ public class MyMod {
         
         float swingProgress = event.getSwingProgress();
 
+        // ИСПРАВЛЕНО ДЛЯ 1.21.4: Модифицируем нативную матрицу БЕЗ отмены ивента.
+        // Это полностью возвращает уменьшение предметов, перемещение рук по осям и независимость K от J.
         if (currentArm == HumanoidArm.RIGHT) {
-            poseStack.pushPose();
+            poseStack.pushPose(); // Изолируем правую руку от левой
+            
+            // Применяем X, Y, Z калибровку и масштаб правой руки из меню K
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
 
+            // Анимация идеального прокрута на месте
             if (RightHandConfig.swingMode == 1 && swingProgress > 0.0f) {
                 poseStack.translate(0.0D, (double)(swingProgress * 0.4F), (double)(swingProgress * 0.1F));
                 poseStack.mulPose(Axis.XP.rotationDegrees(swingProgress * 40.0F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(-swingProgress * 20.0F));
                 poseStack.mulPose(Axis.ZP.rotationDegrees(swingProgress * 360.0f));
             }
-            poseStack.popPose(); 
+            
+            poseStack.popPose(); // Сбрасываем изменения матрицы, чтобы они не улетели на левую руку
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            poseStack.pushPose();
+            poseStack.pushPose(); // Изолируем левую руку от правой
+            
+            // Применяем X, Y, Z калибровку и уменьшенный в два раза масштаб левой руки из меню K
             poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
             poseStack.scale(0.275f, 0.275f, 0.275f);
-            poseStack.popPose(); 
+            
+            poseStack.popPose(); // Сбрасываем изменения матрицы
         }
     }
 }
