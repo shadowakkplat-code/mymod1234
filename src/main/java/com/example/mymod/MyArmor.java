@@ -9,8 +9,9 @@ public class MyArmor {
     // Контейнер класса
 }
 
+// ЭКРАН НА КЛАВИШУ K: УПРАВЛЕНИЕ ОБЕИМИ РУКАМИ И АНИМАЦИЕЙ
 class RightConfigScreen extends Screen {
-    protected RightConfigScreen() { super(Component.literal("Настройка правой руки")); }
+    protected RightConfigScreen() { super(Component.literal("Настройка рук и анимации")); }
 
     @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
@@ -26,39 +27,39 @@ class RightConfigScreen extends Screen {
         g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, 0xFFFFFFFF);
     }
 
-    // Новые 5 названий анимаций
-    private String getSwingModeName(int mode) {
-        switch (mode) {
-            case 0: return "Анимация: 1. Ванилла";
-            case 1: return "Анимация: 2. Неподвижный";
-            case 2: return "Анимация: 3. Прокрут вперед";
-            case 3: return "Анимация: 4. Вниз-Вверх";
-            case 4: return "Анимация: 5. Поворот 90 + Бока";
-            default: return "Анимация: 1. Ванилла";
-        }
-    }
-
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 125, 0xAAAAAA);
         
         int cy = this.height / 2;
-        int cx = this.width / 2 - 50;  
+        int cxLeft = this.width / 2 - 120;  
+        int cxRight = this.width / 2 + 20;  
         
-        graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", this.width / 2, cy - 90, 0xFF5555);
+        graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", cxLeft + 50, cy - 90, 0x55FF55);
+        graphics.drawCenteredString(this.font, "[ ПРАВАЯ РУКА ]", cxRight + 50, cy - 90, 0xFF5555);
 
-        drawCustomButton(graphics, "^ Выше (П)", cx, cy - 70, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "v Ниже (П)", cx, cy - 45, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "-> Дальше (П)", cx, cy - 20, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "<- Ближе (П)", cx, cy + 5, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "<= Влево (П)", cx, cy + 30, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "Вправо => (П)", cx, cy + 55, 100, 20, mouseX, mouseY);
+        // ЛЕВАЯ РУКА КНОПКИ
+        drawCustomButton(graphics, "^ Выше (Л)", cxLeft, cy - 70, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "v Ниже (Л)", cxLeft, cy - 45, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "-> Дальше (Л)", cxLeft, cy - 20, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "<- Ближе (Л)", cxLeft, cy + 5, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "<= Влево (Л)", cxLeft, cy + 30, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "Вправо => (Л)", cxLeft, cy + 55, 100, 20, mouseX, mouseY);
         
-        // Кнопка выбора анимации (5 вариантов)
-        drawCustomButton(graphics, getSwingModeName(RightHandConfig.swingMode), this.width / 2 - 75, cy + 80, 150, 20, mouseX, mouseY);
+        // ПРАВАЯ РУКА КНОПКИ
+        drawCustomButton(graphics, "^ Выше (П)", cxRight, cy - 70, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "v Ниже (П)", cxRight, cy - 45, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "-> Дальше (П)", cxRight, cy - 20, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "<- Ближе (П)", cxRight, cy + 5, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "<= Влево (П)", cxRight, cy + 30, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "Вправо => (П)", cxRight, cy + 55, 100, 20, mouseX, mouseY);
         
-        drawCustomButton(graphics, "[x] Закрыть", cx, cy + 105, 100, 20, mouseX, mouseY);
+        // Кнопка выбора анимации (Всего 2 варианта)
+        String animName = RightHandConfig.swingMode == 1 ? "Анимация: Прокрут 360" : "Анимация: Ванилла";
+        drawCustomButton(graphics, animName, this.width / 2 - 75, cy + 80, 150, 20, mouseX, mouseY);
+        
+        drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 105, 100, 20, mouseX, mouseY);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -66,23 +67,37 @@ class RightConfigScreen extends Screen {
     public boolean mouseClicked(double mx, double my, int button) {
         if (button == 0) {
             int cy = this.height / 2;
-            int cx = this.width / 2 - 50;
+            int cxLeft = this.width / 2 - 120;
+            int cxRight = this.width / 2 + 20;
             
-            if (mx >= cx && mx < cx + 100) {
+            // Клики ЛЕВОЙ РУКИ
+            if (mx >= cxLeft && mx < cxLeft + 100) {
+                if (my >= cy - 70 && my < cy - 50) { RightHandConfig.leftY += 0.05f; return true; }
+                if (my >= cy - 45 && my < cy - 25) { RightHandConfig.leftY -= 0.05f; return true; }
+                if (my >= cy - 20 && my < cy) { RightHandConfig.leftZ -= 0.05f; return true; }
+                if (my >= cy + 5 && my < cy + 25) { RightHandConfig.leftZ += 0.05f; return true; }
+                if (my >= cy + 30 && my < cy + 50) { RightHandConfig.leftX -= 0.05f; return true; }
+                if (my >= cy + 55 && my < cy + 75) { RightHandConfig.leftX += 0.05f; return true; }
+            }
+            
+            // Клики ПРАВОЙ РУКИ
+            if (mx >= cxRight && mx < cxRight + 100) {
                 if (my >= cy - 70 && my < cy - 50) { RightHandConfig.rightY += 0.05f; return true; }
                 if (my >= cy - 45 && my < cy - 25) { RightHandConfig.rightY -= 0.05f; return true; }
                 if (my >= cy - 20 && my < cy) { RightHandConfig.rightZ -= 0.05f; return true; }
                 if (my >= cy + 5 && my < cy + 25) { RightHandConfig.rightZ += 0.05f; return true; }
                 if (my >= cy + 30 && my < cy + 50) { RightHandConfig.rightX -= 0.05f; return true; }
                 if (my >= cy + 55 && my < cy + 75) { RightHandConfig.rightX += 0.05f; return true; }
-                if (my >= cy + 105 && my < cy + 125) {
-                    if (this.minecraft != null) this.minecraft.setScreen(null);
-                    return true;
-                }
             }
             
+            // Кнопка смены анимации
             if (mx >= this.width / 2 - 75 && mx < this.width / 2 + 75 && my >= cy + 80 && my < cy + 100) {
-                RightHandConfig.swingMode = (RightHandConfig.swingMode + 1) % 5; // Крутим от 0 до 4
+                RightHandConfig.swingMode = RightHandConfig.swingMode == 1 ? 0 : 1;
+                return true;
+            }
+
+            if (mx >= this.width / 2 - 50 && mx < this.width / 2 + 50 && my >= cy + 105 && my < cy + 125) {
+                if (this.minecraft != null) this.minecraft.setScreen(null);
                 return true;
             }
         }
@@ -90,17 +105,18 @@ class RightConfigScreen extends Screen {
     }
 }
 
+// ЭКРАН НА КЛАВИШУ J: ВЫБОР ИЗ 5 ЛУЧШИХ PvP ЭФФЕКТОВ УДАРА
 class LeftConfigScreen extends Screen {
-    protected LeftConfigScreen() { super(Component.literal("Настройка левой руки")); }
+    protected LeftConfigScreen() { super(Component.literal("Выбор PvP эффекта частиц")); }
 
     @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderTransparentBackground(graphics);
     }
 
-    private void drawCustomButton(GuiGraphics g, String text, int x, int y, int w, int h, int mx, int my) {
+    private void drawCustomButton(GuiGraphics g, String text, int x, int y, int w, int h, int mx, int my, boolean active) {
         boolean hovered = mx >= x && mx <= x + w && my >= y && my <= y + h;
-        int color = hovered ? 0xEE777777 : 0xEE444444; 
+        int color = active ? 0xEE22AA22 : (hovered ? 0xEE777777 : 0xEE444444); 
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         g.fill(x, y, x + w, y + h, color);
@@ -110,21 +126,21 @@ class LeftConfigScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.drawCenteredString(this.font, "Нажмите ESC для возврата в игру", this.width / 2, this.height / 2 + 125, 0xAAAAAA);
+        graphics.drawCenteredString(this.font, "Нажмите ESC для возврата", this.width / 2, this.height / 2 + 90, 0xAAAAAA);
         
         int cy = this.height / 2;
-        int cx = this.width / 2 - 50;  
+        int cx = this.width / 2 - 75;
         
-        graphics.drawCenteredString(this.font, "[ ЛЕВАЯ РУКА ]", this.width / 2, cy - 90, 0x55FF55);
+        graphics.drawCenteredString(this.font, "==== ЭФФЕКТЫ УДАРА (50 ЧАСТИЦ) ====", this.width / 2, cy - 80, 0xFFFF55);
 
-        drawCustomButton(graphics, "^ Выше (Л)", cx, cy - 70, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "v Ниже (Л)", cx, cy - 45, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "-> Дальше (Л)", cx, cy - 20, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "<- Ближе (Л)", cx, cy + 5, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "<= Влево (Л)", cx, cy + 30, 100, 20, mouseX, mouseY);
-        drawCustomButton(graphics, "Вправо => (Л)", cx, cy + 55, 100, 20, mouseX, mouseY);
+        // 5 Кнопок выбора эффектов (Активная подсвечивается зеленым)
+        drawCustomButton(graphics, "1. Искры Энда", cx, cy - 55, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 0);
+        drawCustomButton(graphics, "2. Крит-Сердечки", cx, cy - 30, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 1);
+        drawCustomButton(graphics, "3. Огненный Взрыв", cx, cy - 5, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 2);
+        drawCustomButton(graphics, "4. Ведьмин Дым", cx, cy + 20, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 3);
+        drawCustomButton(graphics, "5. Огненные Души", cx, cy + 45, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 4);
         
-        drawCustomButton(graphics, "[x] Закрыть", cx, cy + 85, 100, 20, mouseX, mouseY);
+        drawCustomButton(graphics, "[x] Закрыть", this.width / 2 - 50, cy + 70, 100, 20, mouseX, mouseY, false);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -132,19 +148,19 @@ class LeftConfigScreen extends Screen {
     public boolean mouseClicked(double mx, double my, int button) {
         if (button == 0) {
             int cy = this.height / 2;
-            int cx = this.width / 2 - 50;
-            
-            if (mx >= cx && mx < cx + 100) {
-                if (my >= cy - 70 && my < cy - 50) { LeftHandConfig.leftY += 0.05f; return true; }
-                if (my >= cy - 45 && my < cy - 25) { LeftHandConfig.leftY -= 0.05f; return true; }
-                if (my >= cy - 20 && my < cy) { LeftHandConfig.leftZ -= 0.05f; return true; }
-                if (my >= cy + 5 && my < cy + 25) { LeftHandConfig.leftZ += 0.05f; return true; }
-                if (my >= cy + 30 && my < cy + 50) { LeftHandConfig.leftX -= 0.05f; return true; }
-                if (my >= cy + 55 && my < cy + 75) { LeftHandConfig.leftX += 0.05f; return true; }
-                if (my >= cy + 85 && my < cy + 105) {
-                    if (this.minecraft != null) this.minecraft.setScreen(null);
-                    return true;
-                }
+            int cx = this.width / 2 - 75;
+
+            if (mx >= cx && mx < cx + 150) {
+                if (my >= cy - 55 && my < cy - 35) { RightHandConfig.particleMode = 0; return true; }
+                if (my >= cy - 30 && my < cy - 10) { RightHandConfig.particleMode = 1; return true; }
+                if (my >= cy - 5 && my < cy + 15) { RightHandConfig.particleMode = 2; return true; }
+                if (my >= cy + 20 && my < cy + 40) { RightHandConfig.particleMode = 3; return true; }
+                if (my >= cy + 45 && my < cy + 65) { RightHandConfig.particleMode = 4; return true; }
+            }
+
+            if (mx >= this.width / 2 - 50 && mx < this.width / 2 + 50 && my >= cy + 70 && my < cy + 90) {
+                if (this.minecraft != null) this.minecraft.setScreen(null);
+                return true;
             }
         }
         return super.mouseClicked(mx, my, button);
