@@ -9,7 +9,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.core.particles.ParticleNav;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.neoforged.bus.api.IEventBus;
@@ -27,12 +26,11 @@ public class MyMod {
     
     private static final java.util.Random RANDOM = new java.util.Random();
 
-    // Конструктор мода обновлен под требования NeoForge 1.21.4 для регистрации KeyMappings
     public MyMod(IEventBus modEventBus) {
-        // Регистрируем системные события мода (клавиши регистрируются на шине MOD)
+        // Регистрация официальных клавиш в системе NeoForge
         modEventBus.addListener(MyKeyBindings::registerKeys);
 
-        // Регистрируем игровые события (на шине GAME / FORGE)
+        // Регистрация остальных модулей мода
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyHud()); 
@@ -82,7 +80,7 @@ public class MyMod {
         }
         wasClicking = isDown;
         
-        // ОПТИМИЗАЦИЯ И ИСПРАВЛЕНИЕ: Читаем состояние клавиш через официальный KeyMapping менеджер игры
+        // Обработка кастомных биндов клавиш через игровой менеджер KeyMapping
         boolean isKDown = MyKeyBindings.OPEN_RIGHT_CONFIG.isDown();
         if (isKDown && !wasKeyKDown && mc.screen == null) {
             mc.setScreen(new RightConfigScreen()); 
