@@ -25,7 +25,7 @@ public class MyMod {
     private static boolean wasKeyJDown = false;
     private static final java.util.Random RANDOM = new java.util.Random();
     
-    private static final ParticleOptions[] PARTICLE_REGISTRY = {
+    public static final ParticleOptions[] PARTICLE_REGISTRY = {
         ParticleTypes.END_ROD, ParticleTypes.PORTAL, ParticleTypes.REVERSE_PORTAL, ParticleTypes.DRAGON_BREATH, ParticleTypes.CHERRY_LEAVES, ParticleTypes.ENCHANT, ParticleTypes.SQUID_INK, ParticleTypes.GLOW,
         ParticleTypes.HEART, ParticleTypes.CRIT, ParticleTypes.ENCHANTED_HIT, ParticleTypes.DAMAGE_INDICATOR, ParticleTypes.ANGRY_VILLAGER, ParticleTypes.HAPPY_VILLAGER, ParticleTypes.FIREWORK, ParticleTypes.SNOWFLAKE,
         ParticleTypes.FLAME, ParticleTypes.SMALL_FLAME, ParticleTypes.LAVA, ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SMOKE, ParticleTypes.LARGE_SMOKE, ParticleTypes.SOUL, ParticleTypes.CAMPFIRE_COSY_SMOKE,
@@ -76,11 +76,11 @@ public class MyMod {
         wasClicking = isDown;
         
         boolean isKDown = MyKeyBindings.OPEN_RIGHT_CONFIG.isDown();
-        if (isKDown && !wasKeyKDown && mc.screen == null) { mc.setScreen(new RightConfigScreen()); }
+        if (isKDown && !wasKeyKDown && mc.screen == null) { mc.setScreen(new HandConfigScreen(false)); }
         wasKeyKDown = isKDown;
 
         boolean isIDown = MyKeyBindings.OPEN_LEFT_CONFIG.isDown();
-        if (isIDown && !wasKeyIDown && mc.screen == null) { mc.setScreen(new LeftConfigScreen()); }
+        if (isIDown && !wasKeyIDown && mc.screen == null) { mc.setScreen(new HandConfigScreen(true)); }
         wasKeyIDown = isIDown;
 
         boolean isJDown = MyKeyBindings.OPEN_PARTICLE_CONFIG.isDown();
@@ -91,30 +91,25 @@ public class MyMod {
     @SubscribeEvent
     public void onRenderHand(RenderHandEvent event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null) return;
-        
-        ItemStack itemStack = event.getItemStack();
-        if (itemStack.isEmpty()) return;
+        if (mc.player == null || event.getItemStack().isEmpty()) return;
 
         PoseStack poseStack = event.getPoseStack();
-        InteractionHand hand = event.getHand();
-        
-        HumanoidArm mainArm = mc.player.getMainArm();
-        HumanoidArm currentArm = (hand == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
+        boolean isRight = (event.getHand() == InteractionHand.MAIN_HAND && mc.player.getMainArm() == HumanoidArm.RIGHT) ||
+                          (event.getHand() == InteractionHand.OFF_HAND && mc.player.getMainArm() == HumanoidArm.LEFT);
 
-        if (currentArm == HumanoidArm.RIGHT) {
+        if (isRight) {
             poseStack.pushPose(); 
             float rightScaleMultiplier = 1.0f - (MyModConfig.rightScalePercent / 100.0f);
             poseStack.translate(MyModConfig.rightX, MyModConfig.rightY, MyModConfig.rightZ);
             poseStack.scale(rightScaleMultiplier, rightScaleMultiplier, rightScaleMultiplier);
-            poseStack.popPose(); // Исправлен вылет рендера правой руки
+            // ПОПРАВЛЕНО: НЕ вызываем popPose здесь, чтобы настройки применились к предмету!
         } 
-        else if (currentArm == HumanoidArm.LEFT) {
+        else {
             poseStack.pushPose(); 
             float leftScaleMultiplier = 1.0f - (MyModConfig.leftScalePercent / 100.0f);
             poseStack.translate(MyModConfig.leftX, MyModConfig.leftY, MyModConfig.leftZ);
             poseStack.scale(leftScaleMultiplier, leftScaleMultiplier, leftScaleMultiplier);
-            poseStack.popPose(); // Исправлен вылет рендера левой руки
+            // ПОПРАВЛЕНО: НЕ вызываем popPose здесь, чтобы настройки применились к предмету!
         }
     }
 }
