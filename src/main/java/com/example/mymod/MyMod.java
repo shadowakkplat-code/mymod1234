@@ -9,14 +9,15 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.core.particles.ParticleNav;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import org.lwjgl.glfw.GLFW;
 
 @Mod("mymod")
 public class MyMod {
@@ -26,20 +27,24 @@ public class MyMod {
     
     private static final java.util.Random RANDOM = new java.util.Random();
 
-    public MyMod() {
+    // Конструктор мода обновлен под требования NeoForge 1.21.4 для регистрации KeyMappings
+    public MyMod(IEventBus modEventBus) {
+        // Регистрируем системные события мода (клавиши регистрируются на шине MOD)
+        modEventBus.addListener(MyKeyBindings::registerKeys);
+
+        // Регистрируем игровые события (на шине GAME / FORGE)
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyHud()); 
     }
 
-    // Хелпер для быстрого подбора лучшего PvP-эффекта по кнопкам из J
     private ParticleOptions getSelectedParticle(int mode) {
         switch (mode) {
-            case 0: return ParticleTypes.END_ROD;         // Белые искры Эндер-стержня
-            case 1: return ParticleTypes.HEART;           // Любовные крит-сердечки
-            case 2: return ParticleTypes.FLAME;           // Огненные искры спавнера
-            case 3: return ParticleTypes.WITCH;           // Фиолетовый ведьмин дым
-            case 4: return ParticleTypes.SOUL_FIRE_FLAME; // Бирюзовое пламя душ
+            case 0: return ParticleTypes.END_ROD;         
+            case 1: return ParticleTypes.HEART;           
+            case 2: return ParticleTypes.FLAME;           
+            case 3: return ParticleTypes.WITCH;           
+            case 4: return ParticleTypes.SOUL_FIRE_FLAME; 
             default: return ParticleTypes.END_ROD;
         }
     }
@@ -62,7 +67,6 @@ public class MyMod {
                 
                 ParticleOptions particle = getSelectedParticle(RightHandConfig.particleMode);
                 
-                // ИСПРАВЛЕНО: Теперь при ударе спавнится ровно 50 мощных PvP-частиц
                 for (int i = 0; i < 50; i++) {
                     double offsetX = (RANDOM.nextDouble() - 0.5) * 1.5;
                     double offsetZ = (RANDOM.nextDouble() - 0.5) * 1.5;
@@ -77,18 +81,15 @@ public class MyMod {
             }
         }
         wasClicking = isDown;
-
-        long windowHandle = mc.getWindow().getWindow();
         
-        // КЛАВИША К: Общее меню настроек рук и анимации
-        boolean isKDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_K) == GLFW.GLFW_PRESS;
+        // ОПТИМИЗАЦИЯ И ИСПРАВЛЕНИЕ: Читаем состояние клавиш через официальный KeyMapping менеджер игры
+        boolean isKDown = MyKeyBindings.OPEN_RIGHT_CONFIG.isDown();
         if (isKDown && !wasKeyKDown && mc.screen == null) {
             mc.setScreen(new RightConfigScreen()); 
         }
         wasKeyKDown = isKDown;
 
-        // КЛАВИША J: Меню выбора PvP-эффекта удара
-        boolean isJDown = GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_J) == GLFW.GLFW_PRESS;
+        boolean isJDown = MyKeyBindings.OPEN_LEFT_CONFIG.isDown();
         if (isJDown && !wasKeyJDown && mc.screen == null) {
             mc.setScreen(new LeftConfigScreen()); 
         }
@@ -112,33 +113,23 @@ public class MyMod {
         float swingProgress = event.getSwingProgress();
 
         if (currentArm == HumanoidArm.RIGHT) {
-            // ПРАВАЯ РУКА: Открываем независимый стек матриц, убирая просачивание кнопок K на левую руку
             poseStack.pushPose();
-            
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
 
-            // ИДЕАЛЬНЫЙ ПРОКРУТ НА 360 НА СВОЕМ МЕСТЕ
             if (RightHandConfig.swingMode == 1 && swingProgress > 0.0f) {
-                // Компенсируем ванильное опускание руки, чтобы меч крутился ровно на месте
                 poseStack.translate(0.0D, (double)(swingProgress * 0.4F), (double)(swingProgress * 0.1F));
                 poseStack.mulPose(Axis.XP.rotationDegrees(swingProgress * 40.0F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(-swingProgress * 20.0F));
-                
-                // Сам чистый прокрут на 360 по оси Z
                 poseStack.mulPose(Axis.ZP.rotationDegrees(swingProgress * 360.0f));
             }
-            
-            poseStack.popPose(); // Чистим стек матрицы, правые координаты гарантированно стираются!
+            poseStack.popPose(); 
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            // ЛЕВАЯ РУКА: Открываем защищенный стек
             poseStack.pushPose();
-            
             poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
-            poseStack.scale(0.275f, 0.275f, 0.275f); // Стабильное уменьшение в 2 раза
-            
-            poseStack.popPose(); // Сбрасываем изменения матрицы
+            poseStack.scale(0.275f, 0.275f, 0.275f);
+            poseStack.popPose(); 
         }
     }
 }
