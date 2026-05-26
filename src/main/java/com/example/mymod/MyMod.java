@@ -93,7 +93,7 @@ public class MyMod {
         HumanoidArm mainArm = mc.player.getMainArm();
         HumanoidArm currentArm = (event.getHand() == InteractionHand.MAIN_HAND) ? mainArm : mainArm.getOpposite();
 
-        // Полностью раздельный рендеринг рук без взаимного влияния
+        // Полностью изолированный просчет для каждой руки
         if (currentArm == HumanoidArm.RIGHT) {
             float rightScaleMultiplier = 1.0f - (RightHandConfig.rightScalePercent / 100.0f);
             poseStack.translate(RightHandConfig.rightX, RightHandConfig.rightY, RightHandConfig.rightZ);
