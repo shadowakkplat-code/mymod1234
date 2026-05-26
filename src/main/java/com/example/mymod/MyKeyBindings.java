@@ -7,25 +7,31 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import org.lwjgl.glfw.GLFW;
 
 public class MyKeyBindings {
-    // Создаем официальные объекты клавиш, которые увидит Minecraft
     public static final KeyMapping OPEN_RIGHT_CONFIG = new KeyMapping(
-        "key.mymod.right_config", // Название в файле локализации
+        "key.mymod.right_config",
         InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_K,          // Кнопка по умолчанию K
-        "key.categories.mymod"    // Название категории в меню настроек
+        GLFW.GLFW_KEY_K, // Правая рука на K
+        "key.categories.mymod"
     );
 
     public static final KeyMapping OPEN_LEFT_CONFIG = new KeyMapping(
-        "key.mymod.left_config",  // Название в файле локализации
+        "key.mymod.left_config",
         InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_J,          // Кнопка по умолчанию J
-        "key.categories.mymod"    // Название категории в меню настроек
+        GLFW.GLFW_KEY_I, // ЛЕВАЯ РУКА ПЕРЕНЕСЕНА НА КЛАВИШУ I
+        "key.categories.mymod"
+    );
+
+    public static final KeyMapping OPEN_PARTICLE_CONFIG = new KeyMapping(
+        "key.mymod.particle_config",
+        InputConstants.Type.KEYSYM,
+        GLFW.GLFW_KEY_J, // Частицы на J
+        "key.categories.mymod"
     );
 
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
-        // Регистрируем клавиши в движке NeoForge
         event.register(OPEN_RIGHT_CONFIG);
         event.register(OPEN_LEFT_CONFIG);
+        event.register(OPEN_PARTICLE_CONFIG);
     }
 }
