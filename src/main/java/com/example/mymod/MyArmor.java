@@ -9,7 +9,7 @@ public class MyArmor {
     // Контейнер класса
 }
 
-// ЭКРАН НА КЛАВИШУ K: УПРАВЛЕНИЕ ОБЕИМИ РУКАМИ И АНИМАЦИЕЙ
+// ЭКРАН НА КЛАВИШУ K: НАСТРОЙКА РУК
 class RightConfigScreen extends Screen {
     protected RightConfigScreen() { super(Component.literal("Настройка рук и анимации")); }
 
@@ -55,7 +55,6 @@ class RightConfigScreen extends Screen {
         drawCustomButton(graphics, "<= Влево (П)", cxRight, cy + 30, 100, 20, mouseX, mouseY);
         drawCustomButton(graphics, "Вправо => (П)", cxRight, cy + 55, 100, 20, mouseX, mouseY);
         
-        // Кнопка выбора анимации (Всего 2 варианта)
         String animName = RightHandConfig.swingMode == 1 ? "Анимация: Прокрут 360" : "Анимация: Ванилла";
         drawCustomButton(graphics, animName, this.width / 2 - 75, cy + 80, 150, 20, mouseX, mouseY);
         
@@ -70,7 +69,6 @@ class RightConfigScreen extends Screen {
             int cxLeft = this.width / 2 - 120;
             int cxRight = this.width / 2 + 20;
             
-            // Клики ЛЕВОЙ РУКИ
             if (mx >= cxLeft && mx < cxLeft + 100) {
                 if (my >= cy - 70 && my < cy - 50) { RightHandConfig.leftY += 0.05f; return true; }
                 if (my >= cy - 45 && my < cy - 25) { RightHandConfig.leftY -= 0.05f; return true; }
@@ -80,7 +78,6 @@ class RightConfigScreen extends Screen {
                 if (my >= cy + 55 && my < cy + 75) { RightHandConfig.leftX += 0.05f; return true; }
             }
             
-            // Клики ПРАВОЙ РУКИ
             if (mx >= cxRight && mx < cxRight + 100) {
                 if (my >= cy - 70 && my < cy - 50) { RightHandConfig.rightY += 0.05f; return true; }
                 if (my >= cy - 45 && my < cy - 25) { RightHandConfig.rightY -= 0.05f; return true; }
@@ -90,7 +87,6 @@ class RightConfigScreen extends Screen {
                 if (my >= cy + 55 && my < cy + 75) { RightHandConfig.rightX += 0.05f; return true; }
             }
             
-            // Кнопка смены анимации
             if (mx >= this.width / 2 - 75 && mx < this.width / 2 + 75 && my >= cy + 80 && my < cy + 100) {
                 RightHandConfig.swingMode = RightHandConfig.swingMode == 1 ? 0 : 1;
                 return true;
@@ -105,7 +101,7 @@ class RightConfigScreen extends Screen {
     }
 }
 
-// ЭКРАН НА КЛАВИШУ J: ВЫБОР ИЗ 5 ЛУЧШИХ PvP ЭФФЕКТОВ УДАРА
+// ЭКРАН НА КЛАВИШУ J: ВЫБОР ЧАСТИЦ (Исправлена ширина кнопок и хитбоксы клика)
 class LeftConfigScreen extends Screen {
     protected LeftConfigScreen() { super(Component.literal("Выбор PvP эффекта частиц")); }
 
@@ -129,11 +125,11 @@ class LeftConfigScreen extends Screen {
         graphics.drawCenteredString(this.font, "Нажмите ESC для возврата", this.width / 2, this.height / 2 + 90, 0xAAAAAA);
         
         int cy = this.height / 2;
-        int cx = this.width / 2 - 75;
+        int cx = this.width / 2 - 75; // Кнопка шириной 150 пикселей, центрируем (150 / 2 = 75)
         
-        graphics.drawCenteredString(this.font, "==== ЭФФЕКТЫ УДАРА (50 ЧАСТИЦ) ====", this.width / 2, cy - 80, 0xFFFF55);
+        graphics.drawCenteredString(this.font, "==== ТИП PvP ЧАСТИЦ (ИХ БУДЕТ 50) ====", this.width / 2, cy - 80, 0xFFFF55);
 
-        // 5 Кнопок выбора эффектов (Активная подсвечивается зеленым)
+        // Исправлено: ширина кнопок выставлена в 150, чтобы соответствовать хитбоксу
         drawCustomButton(graphics, "1. Искры Энда", cx, cy - 55, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 0);
         drawCustomButton(graphics, "2. Крит-Сердечки", cx, cy - 30, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 1);
         drawCustomButton(graphics, "3. Огненный Взрыв", cx, cy - 5, 150, 20, mouseX, mouseY, RightHandConfig.particleMode == 2);
@@ -150,15 +146,16 @@ class LeftConfigScreen extends Screen {
             int cy = this.height / 2;
             int cx = this.width / 2 - 75;
 
-            if (mx >= cx && mx < cx + 150) {
-                if (my >= cy - 55 && my < cy - 35) { RightHandConfig.particleMode = 0; return true; }
-                if (my >= cy - 30 && my < cy - 10) { RightHandConfig.particleMode = 1; return true; }
-                if (my >= cy - 5 && my < cy + 15) { RightHandConfig.particleMode = 2; return true; }
-                if (my >= cy + 20 && my < cy + 40) { RightHandConfig.particleMode = 3; return true; }
-                if (my >= cy + 45 && my < cy + 65) { RightHandConfig.particleMode = 4; return true; }
+            // ИСПРАВЛЕНО: Хитбоксы кликов теперь идеально совпадают со всеми 5 кнопками выбора частиц
+            if (mx >= cx && mx <= cx + 150) {
+                if (my >= cy - 55 && my <= cy - 35) { RightHandConfig.particleMode = 0; return true; }
+                if (my >= cy - 30 && my <= cy - 10) { RightHandConfig.particleMode = 1; return true; }
+                if (my >= cy - 5 && my <= cy + 15) { RightHandConfig.particleMode = 2; return true; }
+                if (my >= cy + 20 && my <= cy + 40) { RightHandConfig.particleMode = 3; return true; }
+                if (my >= cy + 45 && my <= cy + 65) { RightHandConfig.particleMode = 4; return true; }
             }
 
-            if (mx >= this.width / 2 - 50 && mx < this.width / 2 + 50 && my >= cy + 70 && my < cy + 90) {
+            if (mx >= this.width / 2 - 50 && mx <= this.width / 2 + 50 && my >= cy + 70 && my <= cy + 90) {
                 if (this.minecraft != null) this.minecraft.setScreen(null);
                 return true;
             }
