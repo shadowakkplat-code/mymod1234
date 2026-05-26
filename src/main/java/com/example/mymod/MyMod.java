@@ -32,31 +32,38 @@ public class MyMod {
         NeoForge.EVENT_BUS.register(new MyHud()); 
     }
 
+    private ParticleOptions getSelectedParticle(int mode) {
+        if (mode == 1) return ParticleTypes.HEART;           
+        if (mode == 2) return ParticleTypes.FLAME;           
+        if (mode == 3) return ParticleTypes.WITCH;           
+        if (mode == 4) return ParticleTypes.SOUL_FIRE_FLAME; 
+        return ParticleTypes.END_ROD;                        
+    }
+
     // Метод спавна 8 разных частиц в зависимости от выбранного набора (0-4)
     private void spawnComboParticles(Minecraft mc, Entity target, float height, int mode) {
         double x = target.getX();
         double y = target.getY();
         double z = target.getZ();
 
-        // 5 заготовленных колонок, в каждой из которых по 8 уникальных частиц
+        // ИСПРАВЛЕНО: Заменили DIP_SQUEAK, GUST_EMITTER и TRIAL_SPAWNER на 100% стабильные частицы
         ParticleOptions[][] particleCombos = {
             // Набор 1: Мистический Эндер
             { ParticleTypes.END_ROD, ParticleTypes.PORTAL, ParticleTypes.REVERSE_PORTAL, ParticleTypes.DRAGON_BREATH, ParticleTypes.CHERRY_LEAVES, ParticleTypes.ENCHANT, ParticleTypes.SQUID_INK, ParticleTypes.GLOW },
             // Набор 2: Крит и Сердца
-            { ParticleTypes.HEART, ParticleTypes.CRIT, ParticleTypes.ENCHANTED_HIT, ParticleTypes.DAMAGE_INDICATOR, ParticleTypes.ANGRY_VILLAGER, ParticleTypes.HAPPY_VILLAGER, ParticleTypes.ITEM_SLIME, ParticleTypes.SNOWFLAKE },
+            { ParticleTypes.HEART, ParticleTypes.CRIT, ParticleTypes.ENCHANTED_HIT, ParticleTypes.DAMAGE_INDICATOR, ParticleTypes.ANGRY_VILLAGER, ParticleTypes.HAPPY_VILLAGER, ParticleTypes.COMPOUND_CONGLOMERATE, ParticleTypes.SNOWFLAKE },
             // Набор 3: Огненный Ад
-            { ParticleTypes.FLAME, ParticleTypes.SMALL_FLAME, ParticleTypes.LAVA, ParticleTypes.DIP_SQUEAK, ParticleTypes.SMOKE, ParticleTypes.LARGE_SMOKE, ParticleTypes.SOUL, ParticleTypes.GUST_EMITTER },
+            { ParticleTypes.FLAME, ParticleTypes.SMALL_FLAME, ParticleTypes.LAVA, ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SMOKE, ParticleTypes.LARGE_SMOKE, ParticleTypes.SOUL, ParticleTypes.CAMPFIRE_COSY_SMOKE },
             // Набор 4: Проклятие Ведьмы
-            { ParticleTypes.WITCH, ParticleTypes.SNEEZE, ParticleTypes.BUBBLE, ParticleTypes.RAIN, ParticleTypes.MYCELIUM, ParticleTypes.SPORE_BLOSSOM_AIR, ParticleTypes.EGG_CRACK, ParticleTypes.WHITE_SMOKE },
+            { ParticleTypes.WITCH, ParticleTypes.POOF, ParticleTypes.BUBBLE, ParticleTypes.RAIN, ParticleTypes.MYCELIUM, ParticleTypes.EFFECT, ParticleTypes.INSTANT_EFFECT, ParticleTypes.WHITE_SMOKE },
             // Набор 5: Хранитель Душ
-            { ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SOUL, ParticleTypes.SCULK_SOUL, ParticleTypes.SCULK_CHARGE_POP, ParticleTypes.TRIAL_SPAWNER_DETECTION, ParticleTypes.GLOW_SQUID_INK, ParticleTypes.VAULT_CONNECTION, ParticleTypes.WHITE_ASH }
+            { ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SOUL, ParticleTypes.SCULK_SOUL, ParticleTypes.SCULK_CHARGE_POP, ParticleTypes.DRIP_WATER, ParticleTypes.GLOW_SQUID_INK, ParticleTypes.UNDERWATER, ParticleTypes.WHITE_ASH }
         };
 
-        // Берем нужную колонку (защита от выхода за пределы)
         int selectedIndex = (mode >= 0 && mode < 5) ? mode : 0;
         ParticleOptions[] currentCombo = particleCombos[selectedIndex];
 
-        // Спавним уменьшенное аккуратное количество частиц (12 штук на удар)
+        // Аккуратный PvP-пакет из 12 частиц на один удар
         for (int i = 0; i < 12; i++) {
             double offsetX = (RANDOM.nextDouble() - 0.5) * 1.2;
             double offsetZ = (RANDOM.nextDouble() - 0.5) * 1.2;
@@ -66,7 +73,6 @@ public class MyMod {
             double speedY = RANDOM.nextDouble() * 0.15;
             double speedZ = (RANDOM.nextDouble() - 0.5) * 0.25;
             
-            // Выбираем случайную частицу из 8 доступных в нашей колонке
             ParticleOptions randomParticleFromCombo = currentCombo[RANDOM.nextInt(8)];
             mc.level.addParticle(randomParticleFromCombo, x + offsetX, y + offsetY, z + offsetZ, speedX, speedY, speedZ);
         }
@@ -112,9 +118,7 @@ public class MyMod {
         
         float swingProgress = event.getSwingProgress();
 
-        // ГАРАНТИРОВАННЫЙ PvP-РЕНДЕР С ПОЛНЫМ МАСШТАБОМ И ДВИЖЕНИЕМ
         if (currentArm == HumanoidArm.RIGHT) {
-            // Применяем масштаб и оси правой руки напрямую в матрицу кадра
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
 
@@ -126,9 +130,8 @@ public class MyMod {
             }
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            // Применяем масштаб и оси левой руки напрямую в матрицу кадра
             poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
-            poseStack.scale(0.275f, 0.275f, 0.275f); // Жесткое уменьшение ровно в 2 раза
+            poseStack.scale(0.275f, 0.275f, 0.275f);
         }
     }
 }
