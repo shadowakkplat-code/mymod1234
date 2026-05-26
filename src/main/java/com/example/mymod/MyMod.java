@@ -98,26 +98,22 @@ public class MyMod {
         
         float swingProgress = event.getSwingProgress();
 
-        // 1. ОТМЕНЯЕМ ванильный рендер, чтобы принудительно запечь наши масштабы
+        // 1. НАМЕРТВО ОТМЕНЯЕМ стандартную отрисовку кадра
         event.setCanceled(true);
 
         ItemInHandRenderer itemRenderer = mc.getEntityRenderDispatcher().getItemInHandRenderer();
         MultiBufferSource bufferSource = event.getMultiBufferSource();
         int packedLight = event.getPackedLight();
         
-        float interpolatedPitch = event.getInterpolatedPitch();
-        float equipProgress = event.getEquipProgress();
-        
-        // ИСПРАВЛЕНО: Безопасное извлечение дельты тиков под 1.21.4 без вылетов компилятора
-        float partialTickReal = event.getPartialTick() != null ? event.getPartialTick().getGameTimeDeltaTicks() : 1.0f;
+        // Исправлено: считываем дефолтный float partialTick напрямую из события игры без вызовов методов объектов
+        float pTick = event.getPartialTick();
 
-        // 2. РЕНДЕРИМ КАЖДУЮ РУКУ ПО ОТДЕЛЬНОСТИ
+        // 2. МОДИФИЦИРУЕМ МАТРИЦУ ТРАНСФОРМАЦИЙ ДЛЯ СТОРОН РУК
         if (currentArm == HumanoidArm.RIGHT) {
-            // Сдвигаем и масштабируем ПРАВУЮ руку на основе кнопок из меню К
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
 
-            // Плавный прокрут меча вперед по взгляду
+            // Анимация идеального прокрута меча вперед
             if (RightHandConfig.swingMode == 1 && swingProgress > 0.0f) {
                 poseStack.translate(0.0D, (double)(swingProgress * 0.4F), (double)(swingProgress * 0.1F));
                 poseStack.mulPose(Axis.XP.rotationDegrees(swingProgress * 40.0F));
@@ -125,20 +121,15 @@ public class MyMod {
                 poseStack.mulPose(Axis.ZP.rotationDegrees(-swingProgress * 360.0f)); 
             }
 
-            // Вызываем полноценный ванильный метод рендера руки, но с НАШИМ масштабом и осями
-            itemRenderer.renderArmWithItem(
-                mc.player, partialTickReal, interpolatedPitch, hand, swingProgress, itemStack, equipProgress, poseStack, bufferSource, packedLight
-            );
+            // 3. Вызываем ПУБЛИЧНЫЙ официальный метод отрисовки рук Майнкрафта
+            itemRenderer.renderHandsWithItems(pTick, poseStack, bufferSource.getBuffer(net.minecraft.client.renderer.RenderType.entitySolid()), mc.player, packedLight);
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            // Сдвигаем и уменьшаем ЛЕВУЮ руку ровно в два раза, слушая только левые кнопки
             poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
             poseStack.scale(0.275f, 0.275f, 0.275f);
 
-            // Отрисовываем левую руку с уменьшенным масштабом
-            itemRenderer.renderArmWithItem(
-                mc.player, partialTickReal, interpolatedPitch, hand, swingProgress, itemStack, equipProgress, poseStack, bufferSource, packedLight
-            );
+            // Вызываем ПУБЛИЧНЫЙ официальный метод отрисовки рук Майнкрафта
+            itemRenderer.renderHandsWithItems(pTick, poseStack, bufferSource.getBuffer(net.minecraft.client.renderer.RenderType.entitySolid()), mc.player, packedLight);
         }
     }
 }
