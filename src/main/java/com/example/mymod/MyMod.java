@@ -3,6 +3,8 @@ package com.example.mymod;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Entity;
@@ -25,7 +27,6 @@ public class MyMod {
     private static boolean wasKeyJDown = false;
     private static final java.util.Random RANDOM = new java.util.Random();
     
-    // ОПТИМИЗАЦИЯ: Высокопроизводительный статичный реестр частиц в кэше памяти для ультра-высокого FPS
     private static final ParticleOptions[] PARTICLE_REGISTRY = {
         ParticleTypes.END_ROD, ParticleTypes.PORTAL, ParticleTypes.REVERSE_PORTAL, ParticleTypes.DRAGON_BREATH, ParticleTypes.CHERRY_LEAVES, ParticleTypes.ENCHANT, ParticleTypes.SQUID_INK, ParticleTypes.GLOW,
         ParticleTypes.HEART, ParticleTypes.CRIT, ParticleTypes.ENCHANTED_HIT, ParticleTypes.DAMAGE_INDICATOR, ParticleTypes.ANGRY_VILLAGER, ParticleTypes.HAPPY_VILLAGER, ParticleTypes.FIREWORK, ParticleTypes.SNOWFLAKE,
@@ -56,11 +57,9 @@ public class MyMod {
                 double z = target.getZ();
                 float height = target.getBbHeight();
                 
-                // Моментальное чтение выбранной одиночной частицы из кэша памяти без просадок FPS
                 int id = RightHandConfig.activeParticleId;
                 ParticleOptions selectedParticle = (id >= 0 && id < 40) ? PARTICLE_REGISTRY[id] : ParticleTypes.END_ROD;
                 
-                // Аккуратный PvP-пакет из 12 одиночных частиц выбранного типа
                 for (int i = 0; i < 12; i++) {
                     double offsetX = (RANDOM.nextDouble() - 0.5) * 1.2;
                     double offsetZ = (RANDOM.nextDouble() - 0.5) * 1.2;
@@ -91,8 +90,6 @@ public class MyMod {
         if (mc.player == null || mc.level == null) return;
         
         ItemStack itemStack = event.getItemStack();
-        if (itemStack.isEmpty()) return;
-
         PoseStack poseStack = event.getPoseStack();
         InteractionHand hand = event.getHand();
         
@@ -101,39 +98,54 @@ public class MyMod {
         
         float swingProgress = event.getSwingProgress();
 
-        // ИСПРАВЛЕНО НА О СНОВЕ ИНВЕРСИИ МАТРИЦ: Это на 100% возвращает уменьшение рук и перемещение осей кнопок, 
-        // полностью исключая просачивание координат правой руки на левую.
+        // 1. НАМЕРТВО ОТМЕНЯЕМ стандартную ванильную отрисовку, забирая полный контроль
+        event.setCanceled(true);
+
+        // 2. Извлекаем ссылки на внутренние менеджеры рендеринга игры
+        ItemInHandRenderer itemRenderer = mc.getEntityRenderDispatcher().getItemInHandRenderer();
+        MultiBufferSource bufferSource = event.getMultiBufferSource();
+        int packedLight = event.getPackedLight();
+        
+        float interpolatedPitch = event.getInterpolatedPitch();
+        float equipProgress = event.getEquipProgress();
+
+        // 3. ЖЕСТКО МОДИФИЦИРУЕМ МАТРИЦУ КАДРА И РЕНДЕРИМ КАЖДУЮ РУКУ ПО ОТДЕЛЬНОСТИ
         if (currentArm == HumanoidArm.RIGHT) {
-            // Применяем кастомные сдвиги и масштаб правой руки из меню K
+            // Принудительно сдвигаем и масштабируем ПРАВУЮ руку на основе кнопок из меню К
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
 
-            // Плавный прокрут меча вперед по взгляду игрока
+            // Математика идеального плавного прокрута на месте вперед по взгляду
             if (RightHandConfig.swingMode == 1 && swingProgress > 0.0f) {
                 poseStack.translate(0.0D, (double)(swingProgress * 0.4F), (double)(swingProgress * 0.1F));
                 poseStack.mulPose(Axis.XP.rotationDegrees(swingProgress * 40.0F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(-swingProgress * 20.0F));
                 poseStack.mulPose(Axis.ZP.rotationDegrees(-swingProgress * 360.0f)); 
-                
-                // Нативная математическая инверсия замаха, предотвращающая баги наложения
-                poseStack.mulPose(Axis.ZP.rotationDegrees(swingProgress * 360.0f));
-                poseStack.mulPose(Axis.YP.rotationDegrees(swingProgress * 20.0F));
-                poseStack.mulPose(Axis.XP.rotationDegrees(-swingProgress * 40.0F));
-                poseStack.translate(0.0D, (double)(-swingProgress * 0.4F), (double)(-swingProgress * 0.1F));
             }
-            
-            // Нативная инверсия дефолтных правых координат для полной изоляции левой руки
-            poseStack.scale(1.8181F, 1.8181F, 1.8181F);
-            poseStack.translate(-(double)RightHandConfig.rightX, -(double)RightHandConfig.rightY, -(double)RightHandConfig.rightZ);
+
+            // Вызываем полноценный ванильный метод рендера руки со всеми анимациями ударов/еды, но уже с НАШИМ масштабом
+            itemRenderer.renderArmWithItem(
+                mc.player, partialTick(event), interpolatedPitch, hand, swingProgress, itemStack, equipProgress, poseStack, bufferSource, packedLight
+            );
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            // Применяем кастомные сдвиги и уменьшенный в 2 раза масштаб левой руки из меню K
+            // Принудительно сдвигаем и уменьшаем ЛЕВУЮ руку ровно в два раза, слушая только левые кнопки
             poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
             poseStack.scale(0.275f, 0.275f, 0.275f);
-            
-            // Нативная инверсия дефолтных левых координат, очищающая матрицу кадра
-            poseStack.scale(3.6363F, 3.6363F, 3.6363F);
-            poseStack.translate(-(double)RightHandConfig.leftX, -(double)RightHandConfig.leftY, -(double)RightHandConfig.leftZ);
+
+            // Отрисовываем левую руку с уменьшенным масштабом
+            itemRenderer.renderArmWithItem(
+                mc.player, partialTick(event), interpolatedPitch, hand, swingProgress, itemStack, equipProgress, poseStack, bufferSource, packedLight
+            );
+        }
+    }
+
+    // Хелпер для получения точного времени кадра под NeoForge 1.21.4 во избежание дёрганий
+    private float partialTick(RenderHandEvent event) {
+        try {
+            return event.getPartialTick();
+        } catch (NoSuchMethodError e) {
+            return 1.0f;
         }
     }
 }
