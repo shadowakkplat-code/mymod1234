@@ -79,7 +79,7 @@ class LeftConfigScreen extends Screen {
         if (button == 0) {
             int cy = this.height / 2; int cx = this.width / 2 - 50;
             if (mx >= cx && mx <= cx + 100) {
-                // Изменение координат ЛЕВОЙ руки (left вместо right)
+                // Изменяются строго левые переменные (leftX, leftY, leftZ, leftScalePercent)
                 if (my >= cy - 70 && my <= cy - 50) { RightHandConfig.leftY += 0.05f; return true; }
                 if (my >= cy - 45 && my <= cy - 25) { RightHandConfig.leftY -= 0.05f; return true; }
                 if (my >= cy - 20 && my <= cy) { RightHandConfig.leftZ -= 0.05f; return true; }
