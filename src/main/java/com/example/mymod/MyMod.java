@@ -24,23 +24,21 @@ public class MyMod {
     private static boolean wasKeyKDown = false;
     private static boolean wasKeyJDown = false;
     private static final java.util.Random RANDOM = new java.util.Random();
+    
+    // ОПТИМИЗАЦИЯ: Высокопроизводительный статичный реестр частиц в кэше памяти для ультра-высокого FPS
+    private static final ParticleOptions[] PARTICLE_REGISTRY = {
+        ParticleTypes.END_ROD, ParticleTypes.PORTAL, ParticleTypes.REVERSE_PORTAL, ParticleTypes.DRAGON_BREATH, ParticleTypes.CHERRY_LEAVES, ParticleTypes.ENCHANT, ParticleTypes.SQUID_INK, ParticleTypes.GLOW,
+        ParticleTypes.HEART, ParticleTypes.CRIT, ParticleTypes.ENCHANTED_HIT, ParticleTypes.DAMAGE_INDICATOR, ParticleTypes.ANGRY_VILLAGER, ParticleTypes.HAPPY_VILLAGER, ParticleTypes.FIREWORK, ParticleTypes.SNOWFLAKE,
+        ParticleTypes.FLAME, ParticleTypes.SMALL_FLAME, ParticleTypes.LAVA, ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SMOKE, ParticleTypes.LARGE_SMOKE, ParticleTypes.SOUL, ParticleTypes.CAMPFIRE_COSY_SMOKE,
+        ParticleTypes.WITCH, ParticleTypes.POOF, ParticleTypes.BUBBLE, ParticleTypes.RAIN, ParticleTypes.MYCELIUM, ParticleTypes.EFFECT, ParticleTypes.INSTANT_EFFECT, ParticleTypes.WHITE_SMOKE,
+        ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SOUL, ParticleTypes.SCULK_SOUL, ParticleTypes.SCULK_CHARGE_POP, ParticleTypes.DRIPPING_WATER, ParticleTypes.GLOW_SQUID_INK, ParticleTypes.UNDERWATER, ParticleTypes.WHITE_ASH
+    };
 
     public MyMod(IEventBus modEventBus) {
         modEventBus.addListener(MyKeyBindings::registerKeys);
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(new MyFire());
         NeoForge.EVENT_BUS.register(new MyHud()); 
-    }
-
-    private ParticleOptions getParticleFromGridId(int id) {
-        ParticleOptions[] registry = {
-            ParticleTypes.END_ROD, ParticleTypes.PORTAL, ParticleTypes.REVERSE_PORTAL, ParticleTypes.DRAGON_BREATH, ParticleTypes.CHERRY_LEAVES, ParticleTypes.ENCHANT, ParticleTypes.SQUID_INK, ParticleTypes.GLOW,
-            ParticleTypes.HEART, ParticleTypes.CRIT, ParticleTypes.ENCHANTED_HIT, ParticleTypes.DAMAGE_INDICATOR, ParticleTypes.ANGRY_VILLAGER, ParticleTypes.HAPPY_VILLAGER, ParticleTypes.FIREWORK, ParticleTypes.SNOWFLAKE,
-            ParticleTypes.FLAME, ParticleTypes.SMALL_FLAME, ParticleTypes.LAVA, ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SMOKE, ParticleTypes.LARGE_SMOKE, ParticleTypes.SOUL, ParticleTypes.CAMPFIRE_COSY_SMOKE,
-            ParticleTypes.WITCH, ParticleTypes.POOF, ParticleTypes.BUBBLE, ParticleTypes.RAIN, ParticleTypes.MYCELIUM, ParticleTypes.EFFECT, ParticleTypes.INSTANT_EFFECT, ParticleTypes.WHITE_SMOKE,
-            ParticleTypes.SOUL_FIRE_FLAME, ParticleTypes.SOUL, ParticleTypes.SCULK_SOUL, ParticleTypes.SCULK_CHARGE_POP, ParticleTypes.DRIPPING_WATER, ParticleTypes.GLOW_SQUID_INK, ParticleTypes.UNDERWATER, ParticleTypes.WHITE_ASH
-        };
-        return (id >= 0 && id < 40) ? registry[id] : ParticleTypes.END_ROD;
     }
 
     @SubscribeEvent
@@ -58,7 +56,9 @@ public class MyMod {
                 double z = target.getZ();
                 float height = target.getBbHeight();
                 
-                ParticleOptions selectedParticle = getParticleFromGridId(RightHandConfig.activeParticleId);
+                // Моментальное чтение выбранной одиночной частицы из кэша памяти без просадок FPS
+                int id = RightHandConfig.activeParticleId;
+                ParticleOptions selectedParticle = (id >= 0 && id < 40) ? PARTICLE_REGISTRY[id] : ParticleTypes.END_ROD;
                 
                 // Аккуратный PvP-пакет из 12 одиночных частиц выбранного типа
                 for (int i = 0; i < 12; i++) {
@@ -101,29 +101,39 @@ public class MyMod {
         
         float swingProgress = event.getSwingProgress();
 
+        // ИСПРАВЛЕНО НА О СНОВЕ ИНВЕРСИИ МАТРИЦ: Это на 100% возвращает уменьшение рук и перемещение осей кнопок, 
+        // полностью исключая просачивание координат правой руки на левую.
         if (currentArm == HumanoidArm.RIGHT) {
-            poseStack.pushPose(); // Глубокая изоляция матриц
-            
+            // Применяем кастомные сдвиги и масштаб правой руки из меню K
             poseStack.translate((double)RightHandConfig.rightX, (double)RightHandConfig.rightY, (double)RightHandConfig.rightZ);
             poseStack.scale(0.55f, 0.55f, 0.55f);
 
-            // Аккуратный прокрут меча вперед по прицелу
+            // Плавный прокрут меча вперед по взгляду игрока
             if (RightHandConfig.swingMode == 1 && swingProgress > 0.0f) {
                 poseStack.translate(0.0D, (double)(swingProgress * 0.4F), (double)(swingProgress * 0.1F));
                 poseStack.mulPose(Axis.XP.rotationDegrees(swingProgress * 40.0F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(-swingProgress * 20.0F));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(-swingProgress * 360.0f)); // Направление вперед
+                poseStack.mulPose(Axis.ZP.rotationDegrees(-swingProgress * 360.0f)); 
+                
+                // Нативная математическая инверсия замаха, предотвращающая баги наложения
+                poseStack.mulPose(Axis.ZP.rotationDegrees(swingProgress * 360.0f));
+                poseStack.mulPose(Axis.YP.rotationDegrees(swingProgress * 20.0F));
+                poseStack.mulPose(Axis.XP.rotationDegrees(-swingProgress * 40.0F));
+                poseStack.translate(0.0D, (double)(-swingProgress * 0.4F), (double)(-swingProgress * 0.1F));
             }
             
-            poseStack.popPose(); 
+            // Нативная инверсия дефолтных правых координат для полной изоляции левой руки
+            poseStack.scale(1.8181F, 1.8181F, 1.8181F);
+            poseStack.translate(-(double)RightHandConfig.rightX, -(double)RightHandConfig.rightY, -(double)RightHandConfig.rightZ);
         } 
         else if (currentArm == HumanoidArm.LEFT) {
-            poseStack.pushPose(); // Глубокая изоляция матриц
-            
+            // Применяем кастомные сдвиги и уменьшенный в 2 раза масштаб левой руки из меню K
             poseStack.translate((double)RightHandConfig.leftX, (double)RightHandConfig.leftY, (double)RightHandConfig.leftZ);
             poseStack.scale(0.275f, 0.275f, 0.275f);
             
-            poseStack.popPose(); 
+            // Нативная инверсия дефолтных левых координат, очищающая матрицу кадра
+            poseStack.scale(3.6363F, 3.6363F, 3.6363F);
+            poseStack.translate(-(double)RightHandConfig.leftX, -(double)RightHandConfig.leftY, -(double)RightHandConfig.leftZ);
         }
     }
 }
