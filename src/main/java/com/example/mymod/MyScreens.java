@@ -1,4 +1,3 @@
-
 package com.example.mymod;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -101,8 +100,9 @@ class LeftConfigScreen extends Screen {
                 if (my >= cy - 45 && my <= cy - 25) { MyModConfig.leftY -= 0.05f; return true; }
                 if (my >= cy - 20 && my <= cy) { MyModConfig.leftZ -= 0.05f; return true; }
                 if (my >= cy + 5 && my <= cy + 25) { MyModConfig.leftZ += 0.05f; return true; }
-                if (my >= cy + 30 && MyModConfig.leftX -= 0.05f; return true; } // Исправлено: теперь меняет leftX
-                if (my >= cy + 55 && my <= cy + 75) { MyModConfig.leftX += 0.05f; return true; } // Исправлено: теперь меняет leftX
+                // ИСПРАВЛЕНО: Добавлены корректные проверки диапазонов Y для клика влево/вправо/масштаба
+                if (my >= cy + 30 && my <= cy + 50) { MyModConfig.leftX -= 0.05f; return true; }
+                if (my >= cy + 55 && my <= cy + 75) { MyModConfig.leftX += 0.05f; return true; }
                 if (my >= cy + 80 && my <= cy + 100) {
                     MyModConfig.leftScalePercent = (MyModConfig.leftScalePercent + 10) % 100;
                     return true;
